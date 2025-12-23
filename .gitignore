@@ -1,0 +1,68 @@
+# =========================
+# OS / Editor files
+# =========================
+.DS_Store
+Thumbs.db
+*.log
+
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================
+# Python / Flask
+# =========================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+.env
+.env.*
+venv/
+.venv/
+ENV/
+env/
+
+instance/
+*.sqlite3
+
+# Flask migrations
+migrations/__pycache__/
+
+# =========================
+# Node / Angular
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Angular build output
+dist/
+.angular/
+.cache/
+
+# =========================
+# Build / Coverage
+# =========================
+coverage/
+*.coverage
+*.lcov
+
+# =========================
+# Secrets / Config
+# =========================
+*.key
+*.pem
+*.crt
+secrets.json
+
+# =========================
+# Database dumps
+# =========================
+*.sql
+*.dump
+
+
