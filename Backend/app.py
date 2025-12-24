@@ -20,7 +20,7 @@ from routes.lease_payment import lease_bp
 app=Flask(__name__)
 
 app.config["JWT_SECRET_KEY"]=os.getenv("JWT_SECRET_KEY")
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL","postgresql://postgres:snayak@localhost:5432/apt")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL"," YOUR_DEFAULT_DATABASE_URL_HERE")
 app.config["JWT_TOKEN_LOCATION"] = ["headers"]
 
 CORS(
