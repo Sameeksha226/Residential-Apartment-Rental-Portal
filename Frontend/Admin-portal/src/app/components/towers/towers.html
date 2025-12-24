@@ -1,0 +1,85 @@
+<div class="w-full min-h-screen bg-gray-50 p-6">
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Towers Table (col 8) -->
+    <div class="lg:col-span-8">
+      <div class="bg-white rounded-2xl shadow p-6">
+        <h2 class="text-2xl font-semibold mb-4">Towers List</h2>
+
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="bg-gray-100 text-left">
+              <th class="p-3 font-medium text-gray-600">Tower ID</th>
+              <th class="p-3 font-medium text-gray-600">Name</th>
+              <th class="p-3 font-medium text-gray-600">Address</th>
+              <th class="p-3 font-medium text-gray-600">Total Floors</th>
+              <th class="p-3 font-medium text-gray-600">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody class="divide-y">
+            <!-- Example Row -->
+             @for(item of towerList;track $index){
+            <tr >
+              <td class="p-3">{{item.id}}</td>
+              <td class="p-3">{{item.name}}</td>
+              <td class="p-3">{{item.address}}</td>
+              <td class="p-3">{{item.total_floors}}</td>
+              <td class="p-3 flex gap-2">
+                <button (click)="editTower(item)" class="px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                  Edit
+                </button>
+                <button (click)="deleteTower(item.id)" class="px-3 py-1 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600">
+                  Delete
+                </button>
+              </td>
+            </tr>
+          }
+
+            <!-- Add your dynamic rows here -->
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Form (col 4) -->
+    <div class="lg:col-span-4">
+      <div class="bg-white rounded-2xl shadow p-6">
+        <h2 class="text-2xl font-semibold mb-4">Add / Edit Tower</h2>
+
+        <form class="space-y-4" (ngSubmit)="saveTower()">
+
+          <!-- Tower ID -->
+          <div>
+            <label class="block text-sm font-medium mb-1">Tower ID</label>
+            <input type="number" [(ngModel)]="towerForm.id" name="id" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400" placeholder="Enter tower id">
+          </div>
+
+          <!-- Name -->
+          <div>
+            <label class="block text-sm font-medium mb-1">Name</label>
+            <input type="text" [(ngModel)]="towerForm.name" name="name" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400" placeholder="Enter name">
+          </div>
+
+          <!-- Address -->
+          <div>
+            <label class="block text-sm font-medium mb-1">Address</label>
+            <input type="text" [(ngModel)]="towerForm.address" name="address" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400" placeholder="Enter address">
+          </div>
+
+          <!-- Total Floors -->
+          <div>
+            <label class="block text-sm font-medium mb-1">Total Floors</label>
+            <input [(ngModel)]="towerForm.total_floors" name="total_floors" type="number" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400" placeholder="Enter total floors">
+          </div>
+
+          <button class="w-full bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700">
+            Save Tower
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>

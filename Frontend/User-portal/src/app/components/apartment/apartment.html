@@ -1,0 +1,112 @@
+<div class="min-h-screen bg-gray-50 p-6">
+
+  <!-- SEARCH + FILTER BAR -->
+  <div class="bg-white rounded-2xl shadow p-4 mb-6 sticky top-4 z-10">
+
+    <!-- SEARCH -->
+    <input
+      [(ngModel)]="searchText"
+      (input)="applyFilters()"
+      placeholder="Search by tower, unit, location"
+      class="w-full mb-4 px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-400 focus:outline-none">
+
+    <!-- FILTERS (Shopping App Style) -->
+    <div class="grid grid-cols-2 md:grid-cols-6 gap-3">
+
+      <input
+        type="number"
+        [(ngModel)]="minPrice"
+        (input)="applyFilters()"
+        placeholder="Min ₹"
+        class="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none">
+
+      <input
+        type="number"
+        [(ngModel)]="maxPrice"
+        (input)="applyFilters()"
+        placeholder="Max ₹"
+        class="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none">
+
+      <input
+        type="number"
+        [(ngModel)]="bedrooms"
+        (input)="applyFilters()"
+        placeholder="Bedrooms"
+        class="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none">
+
+      <input
+        type="number"
+        [(ngModel)]="bathrooms"
+        (input)="applyFilters()"
+        placeholder="Bathrooms"
+        class="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none">
+
+      <input
+        type="number"
+        [(ngModel)]="minArea"
+        (input)="applyFilters()"
+        placeholder="Min sqft"
+        class="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none">
+
+      <button
+        (click)="clearFilters()"
+        class="bg-gray-100 rounded-xl font-semibold hover:bg-gray-200 transition">
+        Clear
+      </button>
+
+    </div>
+  </div>
+
+  <!-- ALL UNITS -->
+  <div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+
+    <div
+      *ngFor="let u of filteredUnits"
+      (click)="goToUnit(u)"
+      class="cursor-pointer bg-white rounded-2xl shadow hover:shadow-xl transition overflow-hidden">
+
+      <!-- IMAGE -->
+      <img
+        [src]="u.image_url || 'https://via.placeholder.com/400'"
+        class="w-full h-40 object-cover">
+
+      <!-- CONTENT -->
+      <div class="p-4">
+
+        <!-- UNIT + TOWER -->
+        <h3 class="font-bold text-lg">
+          Unit {{ u.unit_id }}
+        </h3>
+        <p class="text-sm text-gray-500">
+          {{ u.tower_name }}
+        </p>
+
+        <!-- DETAILS -->
+        <p class="text-sm text-gray-500 mt-1">
+          {{ u.bedrooms }} Beds • {{ u.bathrooms }} Baths • {{ u.area_sqft }} sqft
+        </p>
+
+        <!-- PRICE + STATUS -->
+        <div class="flex justify-between items-center mt-3">
+
+          <span class="text-lg font-semibold text-blue-600">
+            ₹{{ u.rent }}
+          </span>
+
+          <span
+            class="px-3 py-1 text-xs rounded-full"
+            [ngClass]="{
+              'bg-green-100 text-green-700': u.status === 'available',
+              'bg-red-100 text-red-700': u.status !== 'available'
+            }">
+            {{ u.status }}
+          </span>
+
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>

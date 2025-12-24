@@ -1,0 +1,100 @@
+<div class="max-w-6xl mx-auto p-6">
+
+  <!-- CREATE BOOKING -->
+  <div class="bg-white shadow rounded p-6 mb-8">
+    <h2 class="text-xl font-bold mb-4">Create Booking</h2>
+
+    <form (ngSubmit)="createBooking()" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      
+      <input
+        type="number"
+        placeholder="User ID"
+        [(ngModel)]="bookingForm.user_id"
+        name="user_id"
+        class="border p-2 rounded"
+        required
+      />
+
+      <input
+        type="number"
+        placeholder="Unit ID"
+        [(ngModel)]="bookingForm.unit_id"
+        name="unit_id"
+        class="border p-2 rounded"
+        required
+      />
+
+      <input
+        type="date"
+        [(ngModel)]="bookingForm.start_date"
+        name="start_date"
+        class="border p-2 rounded"
+        required
+      />
+
+      <input
+        type="date"
+        [(ngModel)]="bookingForm.end_date"
+        name="end_date"
+        class="border p-2 rounded"
+        required
+      />
+
+      <button
+        class="bg-indigo-600 text-white py-2 px-4 rounded col-span-full hover:bg-indigo-700">
+        Create Booking
+      </button>
+    </form>
+  </div>
+
+  <!-- BOOKINGS LIST -->
+  <div class="bg-white shadow rounded p-6">
+    <h2 class="text-xl font-bold mb-4">My Bookings</h2>
+
+    <table class="w-full border">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="border p-2">ID</th>
+          <th class="border p-2">Unit ID</th>
+          <th class="border p-2">Status</th>
+          <th class="border p-2">Booking Date</th>
+          <th class="border p-2">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let b of bookings">
+          <td class="border p-2">{{ b.id }}</td>
+          <td class="border p-2">{{ b.unit_id }}</td>
+          <td class="border p-2">
+            <span class="px-2 py-1 rounded text-sm"
+              [ngClass]="{
+                'bg-yellow-200': b.status === 'pending',
+                'bg-green-200': b.status === 'approved',
+                'bg-red-200': b.status === 'rejected'
+              }">
+              {{ b.status }}
+            </span>
+          </td>
+          <td class="border p-2">{{ b.booking_date | date }}</td>
+
+          <!-- ADMIN ACTION -->
+          <td class="border p-2 space-x-2">
+            <button
+              class="bg-green-600 text-white px-3 py-1 rounded"
+              (click)="updateBooking(b.id, 'approved')">
+              Approve
+            </button>
+
+            <button
+              class="bg-red-600 text-white px-3 py-1 rounded"
+              (click)="updateBooking(b.id, 'rejected')">
+              Reject
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>

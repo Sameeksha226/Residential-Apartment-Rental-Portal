@@ -1,0 +1,25 @@
+<nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex-shrink-0 font-bold text-xl text-blue-600">
+                    Home
+                </div>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex space-x-8">
+                    <a routerLink="/towers" class="text-gray-700 hover:text-blue-600 transition-colors">Towers</a>
+                    <a routerLink="/units" class="text-gray-700 hover:text-blue-600 transition-colors">Units</a>
+                    <a routerLink="/amenities" class="text-gray-700 hover:text-blue-600 transition-colors">Amenities</a>
+                    <a routerLink="/bookings" class="text-gray-700 hover:text-blue-600 transition-colors">Bookings</a>
+                    <a routerLink="/users" class="text-gray-700 hover:text-blue-600 transition-colors">Users</a>
+                </div>
+
+                <!-- CTA Button -->
+                <button class="hidden md:block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                    Sign Up
+                </button>
+                </div>
+        </div>
+</nav>
+<router-outlet></router-outlet>
