@@ -113,7 +113,9 @@ class Amenity(db.Model):
             'name': self.name,
             'description': self.description,
             'capacity': self.capacity,
-            'available': self.available
+            'available': self.available,
+            'icon': self.icon,
+            'image_url': self.image_url
         }
 
 
@@ -201,3 +203,4 @@ class Payment(db.Model):
             'status': self.status,
             'transaction_id': self.transaction_id
         }
+

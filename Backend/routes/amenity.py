@@ -26,11 +26,15 @@ def create_amenity():
     if role !='admin':
         return jsonify({"message":"admin only"}),403
     data=request.get_json() or {}
+    ava=data.get('available')
+    ap=True if ava==True else False
     a=Amenity(tower_id=data.get('tower_id'),
               name=data.get('name'),
               description=data.get('description'),
               capacity=data.get('capacity'),
-              available=data.get('available',True))
+              available=ap,
+              icon=data.get('icon'),
+              image_url=data.get('image_url'))
     db.session.add(a)
     db.session.commit()
     return jsonify({"message":"Amenity created","id":a.id}),200

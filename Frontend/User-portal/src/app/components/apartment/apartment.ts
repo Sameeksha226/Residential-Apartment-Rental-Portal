@@ -12,14 +12,9 @@ import { Router } from '@angular/router';
 })
 export class Apartment implements OnInit {
 
-  view: 'towers' | 'units' = 'towers';
-
   towers: any[] = [];
   units: any[] = [];
   filteredUnits: any[] = [];
-
-  selectedTower: any = null;
-  selectedTowerName = '';
 
   towerMap: { [key: number]: string } = {};
 
@@ -40,72 +35,34 @@ export class Apartment implements OnInit {
     this.loadTowersAndUnits();
   }
 
-  // 🔥 IMPORTANT: Towers FIRST, then Units
   loadTowersAndUnits() {
-
     this.service.getTowers().subscribe(towers => {
       this.towers = towers;
 
-      // Build map
       towers.forEach((t: any) => {
         this.towerMap[t.id] = t.name;
       });
 
-      // Now load units AFTER towerMap is ready
-      this.service.getUnits().subscribe(units => {
-        this.units = units
-          .filter((u: any) => u.status === 'available')
-          .map((u: any) => ({
-            ...u,
-            tower_name: this.towerMap[u.tower_id] ?? 'Unknown Tower'
-          }));
+      this.service.getAvailableUnits().subscribe(units => {
+        this.units = units.map((u: any) => ({
+          ...u,
+          tower_name: this.towerMap[u.tower_id] ?? 'Unknown Tower'
+        }));
 
         this.filteredUnits = [...this.units];
       });
-
     });
   }
 
-  /* ---------------- BUTTONS ---------------- */
-
-  showTowers() {
-    this.view = 'towers';
-    this.selectedTower = null;
-    this.selectedTowerName = '';
-  }
-
-  showAllUnits() {
-    this.view = 'units';
-    this.selectedTower = null;
-    this.selectedTowerName = '';
-    this.applyFilters();
-  }
-
-  selectTower(tower: any) {
-    this.view = 'units';
-    this.selectedTower = tower;
-    this.selectedTowerName = tower.name;
-    this.applyFilters();
-  }
-
-  /* ---------------- FILTERS ---------------- */
-
   applyFilters() {
     this.filteredUnits = this.units.filter(u => {
-
-      if (this.selectedTower && u.tower_id !== this.selectedTower.id) {
-        return false;
-      }
 
       if (this.searchText) {
         const t = this.searchText.toLowerCase();
         if (
           !u.unit_id.toLowerCase().includes(t) &&
-          !u.status.toLowerCase().includes(t) &&
           !u.tower_name.toLowerCase().includes(t)
-        ) {
-          return false;
-        }
+        ) return false;
       }
 
       if (this.minPrice !== null && u.rent < this.minPrice) return false;
@@ -127,8 +84,6 @@ export class Apartment implements OnInit {
     this.bathrooms = null;
     this.applyFilters();
   }
-
-  /* ---------------- NAVIGATION ---------------- */
 
   goToUnit(unit: any) {
     this.router.navigate(['/unit-details', unit.id]);

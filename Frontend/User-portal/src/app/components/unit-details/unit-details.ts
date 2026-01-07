@@ -42,6 +42,6 @@ export class UnitDetails implements OnInit {
   }
 
   requestVisit() {
-    alert('Visit request submitted (can be same booking logic)');
+    alert('Visit request submitted');
   }
 }

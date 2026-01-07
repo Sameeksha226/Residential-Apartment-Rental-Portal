@@ -1,48 +1,64 @@
 <div class="max-w-6xl mx-auto p-6">
 
-  <!-- CREATE BOOKING -->
+  <!-- CREATE / UPDATE BOOKING (UNCHANGED) -->
   <div class="bg-white shadow rounded p-6 mb-8">
-    <h2 class="text-xl font-bold mb-4">Create Booking</h2>
+    <h2 class="text-xl font-bold mb-4">
+      {{ isEditMode ? 'Update Booking' : 'Create Booking' }}
+    </h2>
 
-    <form (ngSubmit)="createBooking()" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      
-      <input
-        type="number"
-        placeholder="User ID"
-        [(ngModel)]="bookingForm.user_id"
-        name="user_id"
+    <form (ngSubmit)="isEditMode ? submitUpdate() : createBooking()"
+          class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+      <input type="number" placeholder="User ID"
+        [(ngModel)]="bookingForm.user_id" name="user_id"
+        class="border p-2 rounded" required />
+
+      <input type="number" placeholder="Unit ID"
+        [(ngModel)]="bookingForm.unit_id" name="unit_id"
+        class="border p-2 rounded" required />
+
+      <input type="date"
+        [(ngModel)]="bookingForm.start_date" name="start_date"
+        class="border p-2 rounded" required />
+
+      <input type="date"
+        [(ngModel)]="bookingForm.end_date" name="end_date"
+        class="border p-2 rounded" required />
+
+      <button class="bg-indigo-600 text-white py-2 rounded col-span-full">
+        {{ isEditMode ? 'Update Booking' : 'Create Booking' }}
+      </button>
+
+      <button *ngIf="isEditMode" type="button"
+        (click)="cancelEdit()"
+        class="bg-gray-400 text-white py-2 rounded col-span-full">
+        Cancel
+      </button>
+    </form>
+  </div>
+
+  <!-- CREATE LEASE (ONLY SHOWN AFTER APPROVAL) -->
+  <div *ngIf="showLeaseForm"
+       class="bg-green-50 border border-green-400 rounded p-6 mb-8">
+
+    <h2 class="text-lg font-bold mb-4">Create Lease</h2>
+
+    <form (ngSubmit)="createLease()" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+      <input type="number" placeholder="Deposit Amount"
+        [(ngModel)]="leaseDeposit"
+        name="deposit"
         class="border p-2 rounded"
-        required
-      />
+        required />
 
-      <input
-        type="number"
-        placeholder="Unit ID"
-        [(ngModel)]="bookingForm.unit_id"
-        name="unit_id"
-        class="border p-2 rounded"
-        required
-      />
+      <button class="bg-green-600 text-white py-2 rounded col-span-full">
+        Create Lease
+      </button>
 
-      <input
-        type="date"
-        [(ngModel)]="bookingForm.start_date"
-        name="start_date"
-        class="border p-2 rounded"
-        required
-      />
-
-      <input
-        type="date"
-        [(ngModel)]="bookingForm.end_date"
-        name="end_date"
-        class="border p-2 rounded"
-        required
-      />
-
-      <button
-        class="bg-indigo-600 text-white py-2 px-4 rounded col-span-full hover:bg-indigo-700">
-        Create Booking
+      <button type="button"
+        (click)="cancelLease()"
+        class="bg-gray-400 text-white py-2 rounded col-span-full">
+        Cancel
       </button>
     </form>
   </div>
@@ -56,6 +72,7 @@
         <tr>
           <th class="border p-2">ID</th>
           <th class="border p-2">Unit ID</th>
+          <th class="border p-2">User ID</th>
           <th class="border p-2">Status</th>
           <th class="border p-2">Booking Date</th>
           <th class="border p-2">Actions</th>
@@ -66,30 +83,29 @@
         <tr *ngFor="let b of bookings">
           <td class="border p-2">{{ b.id }}</td>
           <td class="border p-2">{{ b.unit_id }}</td>
-          <td class="border p-2">
-            <span class="px-2 py-1 rounded text-sm"
-              [ngClass]="{
-                'bg-yellow-200': b.status === 'pending',
-                'bg-green-200': b.status === 'approved',
-                'bg-red-200': b.status === 'rejected'
-              }">
-              {{ b.status }}
-            </span>
-          </td>
+          <td class="border p-2">{{ b.user_id }}</td>
+          <td class="border p-2">{{ b.status }}</td>
           <td class="border p-2">{{ b.booking_date | date }}</td>
 
-          <!-- ADMIN ACTION -->
           <td class="border p-2 space-x-2">
-            <button
-              class="bg-green-600 text-white px-3 py-1 rounded"
-              (click)="updateBooking(b.id, 'approved')">
+            <button class="bg-green-600 text-white px-3 py-1 rounded"
+              (click)="approveBooking(b)">
               Approve
             </button>
 
-            <button
-              class="bg-red-600 text-white px-3 py-1 rounded"
-              (click)="updateBooking(b.id, 'rejected')">
+            <button class="bg-red-600 text-white px-3 py-1 rounded"
+              (click)="updateBookingStatus(b.id, 'rejected')">
               Reject
+            </button>
+
+            <button class="bg-yellow-500 text-white px-3 py-1 rounded"
+              (click)="editBooking(b)">
+              Update
+            </button>
+
+            <button class="bg-blue-600 text-white px-3 py-1 rounded"
+              (click)="deleteBooking(b.id)">
+              Delete
             </button>
           </td>
         </tr>

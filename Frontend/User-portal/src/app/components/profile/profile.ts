@@ -34,6 +34,37 @@ export class Profile implements OnInit {
     if (tab === 'payments') this.loadPayments();
   }
 
+  paymentMethod = '';
+
+hasPaid(leaseId: number): boolean {
+  return this.payments.some(p => p.lease_id === leaseId);
+}
+
+payNow(lease: any) {
+  if (!this.paymentMethod) {
+    alert('Select payment method');
+    return;
+  }
+
+  const payload = {
+    lease_id: lease.id,
+    amount: lease.rent_amount,
+    payment_method: this.paymentMethod
+  };
+
+  this.service.createPayment(payload).subscribe({
+    next: () => {
+      alert('Payment successful');
+      this.paymentMethod = '';
+      this.loadPayments();
+    },
+    error: err => {
+      alert(err.error?.message || 'Payment failed');
+    }
+  });
+}
+
+
   loadProfile() {
     this.service.getProfile().subscribe(res => this.user = res);
   }

@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from models import db, Bookings
+from models import db, Bookings,Unit
 from datetime import datetime
 from flask_jwt_extended import (
     jwt_required,
@@ -58,23 +58,39 @@ def list_bookings():
 
     if claims.get("role") == "admin":
         bookings = Bookings.query.all()
+        return jsonify([
+            {
+                "id": b.id,
+                "user_id": b.user_id,
+                "unit_id": b.unit_id,
+                "status": b.status,
+                "booking_date": b.booking_date.isoformat(),
+                "start_date": b.start_date.isoformat() if b.start_date else None,
+                "end_date": b.end_date.isoformat() if b.end_date else None,
+
+                # ✅ REQUIRED FOR LEASE
+                "unit": {
+                    "rent": b.unit.rent if b.unit else None
+                }
+            }
+            for b in bookings
+        ]), 200
+
     else:
         bookings = Bookings.query.filter_by(user_id=user_id).all()
+        return jsonify([
+            {
+                "id": b.id,
+                "status": b.status,
+                "start_date": b.start_date.isoformat() if b.start_date else None,
+                "end_date": b.end_date.isoformat() if b.end_date else None,
 
-    return jsonify([
-        {
-            "id": b.id,
-            "status": b.status,
-            "start_date": b.start_date.isoformat() if b.start_date else None,
-            "end_date": b.end_date.isoformat() if b.end_date else None,
-
-            # ✅ IMPORTANT FIELDS
-            "unit_name": b.unit.unit_id if b.unit else None,
-            "tower_name": b.unit.tower.name if b.unit and b.unit.tower else None,
-            "tower_address": b.unit.tower.address if b.unit and b.unit.tower else None,
-        }
-        for b in bookings
-    ]), 200
+                "unit_name": b.unit.unit_id if b.unit else None,
+                "tower_name": b.unit.tower.name if b.unit and b.unit.tower else None,
+                "tower_address": b.unit.tower.address if b.unit and b.unit.tower else None,
+            }
+            for b in bookings
+        ]), 200
 
 
 
@@ -94,6 +110,25 @@ def get_booking(booking_id):
 
     return jsonify(booking.to_dict()), 200
 
+@bookings_bp.route('/user/<int:user_id>', methods=['GET'])
+@jwt_required()
+def get_user_bookings(user_id):
+    role=get_jwt()['role']
+    if role !='admin':
+        return jsonify({'message': 'Admin only'}), 403
+
+    bookings = Bookings.query.filter_by(user_id=user_id).all()
+
+    return jsonify([
+        {
+            'id': b.id,
+            'status': b.status,
+            'start_date': b.start_date,
+            'end_date': b.end_date,
+            'unit_id': b.unit_id
+        }
+        for b in bookings
+    ])
 
 # -------------------------------
 # UPDATE BOOKING (ADMIN ONLY)
@@ -109,11 +144,31 @@ def update_booking(booking_id):
     data = request.get_json() or {}
     booking = Bookings.query.get_or_404(booking_id)
 
+    if "user_id" in data:
+        booking.user_id=data["user_id"]
+
+    if "unit_id" in data:
+        booking.unit_id=data["unit_id"]
+
+    if "amenity_id" in data:
+        booking.amenity_id=data["amenity_id"]
+
+    if "start_date" in data:
+        booking.start_date=data["start_date"]
+    
+    if "end_date" in data:
+        booking.end_date=data["end_date"]
+
     if "status" in data:
         booking.status = data["status"]
 
     if "admin_note" in data:
         booking.admin_note = data["admin_note"]
+
+    u=Unit.query.get_or_404(booking.unit_id)
+    if booking.status == 'approved':
+        u.status = 'occupied'
+    
 
     db.session.commit()
 
@@ -153,3 +208,15 @@ def book_unit():
         'message': 'Booking request sent to admin',
         'booking': booking.to_dict()
     }), 201
+
+@bookings_bp.route('/delete/<int:booking_id>',methods=['DELETE'])
+@jwt_required()
+def delete_unit(booking_id):
+    identity=get_jwt_identity()
+    role=get_jwt()['role']
+    if role !='admin':
+        return jsonify({"message":"admin only"}),403
+    b=Bookings.query.get_or_404(booking_id)
+    db.session.delete(b)
+    db.session.commit()
+    return jsonify({'message':'Unit deleted'})

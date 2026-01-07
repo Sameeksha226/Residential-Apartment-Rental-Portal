@@ -5,12 +5,17 @@ import { DashboardService } from '../../services/dashboard.service';
 
 @Component({
   selector: 'app-users',
-  imports: [FormsModule,CommonModule],
+  imports: [FormsModule, CommonModule],
   templateUrl: './users.html',
-  styleUrl: './users.css',
 })
 export class Users {
+
   users: any[] = [];
+
+  selectedUser: any = null;
+  userBookings: any[] = [];
+  userLeases: any[] = [];
+  userPayments: any[] = [];
 
   showForm = false;
   editMode = false;
@@ -26,19 +31,26 @@ export class Users {
 
   constructor(private service: DashboardService) {}
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.loadUsers();
   }
 
-  /* ---------------- LOAD USERS ---------------- */
-
   loadUsers() {
-    this.service.getUsers().subscribe(res => {
-      this.users = res;
-    });
+    this.service.getUsers().subscribe(res => this.users = res);
   }
 
-  /* ---------------- FORM CONTROLS ---------------- */
+  selectUser(user: any) {
+    this.selectedUser = user;
+
+    this.service.getUserBookings(user.id)
+      .subscribe(res => this.userBookings = res);
+
+    this.service.getUserLeases(user.id)
+      .subscribe(res => this.userLeases = res);
+
+    this.service.getUserPayments(user.id)
+      .subscribe(res => this.userPayments = res);
+  }
 
   openAddForm() {
     this.resetForm();
@@ -50,14 +62,7 @@ export class Users {
     this.showForm = true;
     this.editMode = true;
     this.selectedUserId = user.id;
-
-    this.form = {
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      password: '',
-      role: user.role
-    };
+    this.form = { ...user, password: '' };
   }
 
   cancelForm() {
@@ -76,29 +81,25 @@ export class Users {
     this.selectedUserId = null;
   }
 
-  /* ---------------- SAVE USER ---------------- */
-
   saveUser() {
     if (this.editMode && this.selectedUserId) {
-      this.service.updateUser(this.selectedUserId, this.form).subscribe(() => {
-        this.loadUsers();
-        this.cancelForm();
-      });
+      this.service.updateUser(this.selectedUserId, this.form)
+        .subscribe(() => {
+          this.loadUsers();
+          this.cancelForm();
+        });
     } else {
-      this.service.createUser(this.form).subscribe(() => {
-        this.loadUsers();
-        this.cancelForm();
-      });
+      this.service.createUser(this.form)
+        .subscribe(() => {
+          this.loadUsers();
+          this.cancelForm();
+        });
     }
   }
 
-  /* ---------------- DELETE USER ---------------- */
-
   deleteUser(id: number) {
-    if (confirm('Are you sure you want to delete this user?')) {
-      this.service.deleteUser(id).subscribe(() => {
-        this.loadUsers();
-      });
+    if (confirm('Delete this user?')) {
+      this.service.deleteUser(id).subscribe(() => this.loadUsers());
     }
   }
 }

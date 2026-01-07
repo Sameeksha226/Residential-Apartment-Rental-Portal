@@ -48,9 +48,10 @@ export class DashboardService {
   }
 
   // DELETE (optional)
-  //deleteBooking(id: number): Observable<any> {
-    //return this.http.delete(`${this.API_URL}/bookings/delete/${id}`);
-  //}
+  deleteBooking(id: number): Observable<any> {
+    return this.http.delete(`${this.API_URL}/bookings/delete/${id}`);
+  }
+  
   getTowers(): Observable<any[]> {
     return this.http.get<any[]>(`${this.API_URL}/towers/`);
   }
@@ -76,12 +77,12 @@ export class DashboardService {
   }
 
   // GET all units
-getUnits() {
+  getUnits() {
   return this.http.get<any[]>(`${this.API_URL}/units/`);
 }
 
 // GET single unit
-getUnitById(id: number) {
+ getUnitById(id: number) {
   return this.http.get<any>(`${this.API_URL}/units/get/${id}`);
 }
 
@@ -124,10 +125,28 @@ updateAmenity(id: number, data: any) {
     data,
   );
 }
+
 deleteAmenity(id: number) {
   return this.http.delete(
     `${this.API_URL}/amenities/delete/${id}`,
   );
+}
+
+ createLease(data: any) {
+  return this.http.post(`${this.API_URL}/lease/create`, data);
+}
+
+// USER DETAILS
+getUserBookings(userId: number) {
+  return this.http.get<any[]>(`${this.API_URL}/bookings/user/${userId}`);
+}
+
+getUserLeases(userId: number) {
+  return this.http.get<any[]>(`${this.API_URL}/lease/user/${userId}`);
+}
+
+getUserPayments(userId: number) {
+  return this.http.get<any[]>(`${this.API_URL}/lease/payments/user/${userId}`);
 }
 
 }

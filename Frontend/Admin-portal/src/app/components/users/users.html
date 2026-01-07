@@ -13,7 +13,7 @@
       </button>
     </div>
 
-    <!-- ADD / EDIT FORM -->
+    <!-- ADD / EDIT FORM (UNCHANGED) -->
     <div *ngIf="showForm" class="mb-6 p-4 bg-gray-50 rounded-xl">
 
       <h3 class="text-lg font-semibold mb-4">
@@ -22,33 +22,24 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-        <input
-          type="text"
-          placeholder="Full Name"
+        <input type="text" placeholder="Full Name"
           class="p-2 border rounded-lg"
           [(ngModel)]="form.name" />
 
-        <input
-          type="email"
-          placeholder="Email"
+        <input type="email" placeholder="Email"
           class="p-2 border rounded-lg"
           [(ngModel)]="form.email" />
 
-        <input
-          type="text"
-          placeholder="Phone"
+        <input type="text" placeholder="Phone"
           class="p-2 border rounded-lg"
           [(ngModel)]="form.phone" />
 
-        <input
-          *ngIf="!editMode"
-          type="password"
+        <input *ngIf="!editMode" type="password"
           placeholder="Password"
           class="p-2 border rounded-lg"
           [(ngModel)]="form.password" />
 
-        <select
-          class="p-2 border rounded-lg"
+        <select class="p-2 border rounded-lg"
           [(ngModel)]="form.role">
           <option value="user">User</option>
           <option value="admin">Admin</option>
@@ -57,75 +48,86 @@
       </div>
 
       <div class="mt-4 flex gap-3">
-        <button
-            type="button"
-          class="px-4 py-2 bg-green-600 text-white rounded-lg"
-          (click)="saveUser()">
-          💾 Save
-        </button>
+        <button class="px-4 py-2 bg-green-600 text-white rounded-lg"
+          (click)="saveUser()">💾 Save</button>
 
-        <button
-          class="px-4 py-2 bg-gray-400 text-white rounded-lg"
-          (click)="cancelForm()">
-          Cancel
-        </button>
+        <button class="px-4 py-2 bg-gray-400 text-white rounded-lg"
+          (click)="cancelForm()">Cancel</button>
       </div>
 
     </div>
 
     <!-- USERS TABLE -->
-    <div class="overflow-x-auto">
-      <table class="w-full border-collapse">
+    <table class="w-full border-collapse mb-6">
+      <thead class="bg-gray-200">
+        <tr>
+          <th class="p-3 text-left">Name</th>
+          <th class="p-3 text-left">Email</th>
+          <th class="p-3 text-left">Phone</th>
+          <th class="p-3 text-left">Role</th>
+          <th class="p-3 text-left">Created</th>
+          <th class="p-3 text-center">Actions</th>
+        </tr>
+      </thead>
 
-        <thead class="bg-gray-200 text-gray-700">
-          <tr>
-            <th class="p-3 text-left">Name</th>
-            <th class="p-3 text-left">Email</th>
-            <th class="p-3 text-left">Phone</th>
-            <th class="p-3 text-left">Role</th>
-            <th class="p-3 text-left">Created At</th>
-            <th class="p-3 text-center">Actions</th>
-          </tr>
-        </thead>
+      <tbody>
+        <tr *ngFor="let u of users"
+            class="border-b hover:bg-gray-50 cursor-pointer"
+            (click)="selectUser(u)">
 
-        <tbody>
-          <tr
-            *ngFor="let u of users"
-            class="border-b hover:bg-gray-50">
+          <td class="p-3">{{ u.name }}</td>
+          <td class="p-3">{{ u.email }}</td>
+          <td class="p-3">{{ u.phone }}</td>
+          <td class="p-3">{{ u.role }}</td>
+          <td class="p-3">{{ u.created_at | date }}</td>
 
-            <td class="p-3">{{ u.name }}</td>
-            <td class="p-3">{{ u.email }}</td>
-            <td class="p-3">{{ u.phone }}</td>
-            <td class="p-3">
-              <span
-                class="px-2 py-1 rounded-full text-sm"
-                [ngClass]="{
-                  'bg-green-100 text-green-700': u.role === 'admin',
-                  'bg-blue-100 text-blue-700': u.role === 'user'
-                }">
-                {{ u.role }}
-              </span>
-            </td>
-            <td class="p-3">{{ u.created_at | date }}</td>
+          <td class="p-3 text-center space-x-2">
+            <button class="px-3 py-1 bg-yellow-500 text-white rounded"
+              (click)="editUser(u); $event.stopPropagation()">
+              Edit
+            </button>
 
-            <td class="p-3 text-center space-x-2">
-              <button
-                class="px-3 py-1 bg-yellow-500 text-white rounded"
-                (click)="editUser(u)">
-                Edit
-              </button>
+            <button class="px-3 py-1 bg-red-600 text-white rounded"
+              (click)="deleteUser(u.id); $event.stopPropagation()">
+              Delete
+            </button>
+          </td>
 
-              <button
-                class="px-3 py-1 bg-red-600 text-white rounded"
-                (click)="deleteUser(u.id)">
-                Delete
-              </button>
-            </td>
+        </tr>
+      </tbody>
+    </table>
 
-          </tr>
-        </tbody>
+    <!-- USER DETAILS -->
+    <div *ngIf="selectedUser" class="bg-gray-50 rounded-xl p-6">
 
-      </table>
+      <h3 class="text-xl font-bold mb-4">
+        User Details: {{ selectedUser.name }}
+      </h3>
+
+      <!-- BOOKINGS -->
+      <h4 class="font-semibold mb-2">Bookings</h4>
+      <ul class="mb-4 list-disc pl-5">
+        <li *ngFor="let b of userBookings">
+          Booking #{{ b.id }} — {{ b.status }} ({{ b.start_date }} → {{ b.end_date }})
+        </li>
+      </ul>
+
+      <!-- LEASES -->
+      <h4 class="font-semibold mb-2">Leases</h4>
+      <ul class="mb-4 list-disc pl-5">
+        <li *ngFor="let l of userLeases">
+          Lease #{{ l.id }} — Rent: {{ l.rent_amount }} | Deposit: {{ l.deposit }}
+        </li>
+      </ul>
+
+      <!-- PAYMENTS -->
+      <h4 class="font-semibold mb-2">Payments</h4>
+      <ul class="list-disc pl-5">
+        <li *ngFor="let p of userPayments">
+          ₹{{ p.amount }} — {{ p.status }} ({{ p.payment_date | date }})
+        </li>
+      </ul>
+
     </div>
 
   </div>

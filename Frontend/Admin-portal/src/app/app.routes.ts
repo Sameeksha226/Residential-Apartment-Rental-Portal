@@ -36,12 +36,10 @@ export const routes: Routes = [
             {
                 path:'towers',
                 component:Towers,
-                canActivate:[AdminGuard]
             },
             {
                 path:'units',
                 component:Units,
-                canActivate:[AdminGuard]
             },
             {
                 path:'amenities',

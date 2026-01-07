@@ -19,6 +19,11 @@ export class DashboardService {
     return this.http.get<any[]>(`${this.API_URL}/units/`);
   }
 
+  getAvailableUnits() {
+  return this.http.get<any[]>(`${this.API_URL}/units/available`);
+}
+
+
   //getUnitsByTower(towerId: number) {
     //return this.http.get<any[]>(
       //`${this.API_URL}/units/units-by-tower/${towerId}`
@@ -57,4 +62,14 @@ getProfile() {
       }
     );
   }
+
+  createPayment(data: any) {
+  return this.http.post(
+    `${this.API_URL}/lease/payment/create`,
+    data
+  );
+}
+
+
+
 }

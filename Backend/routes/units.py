@@ -125,3 +125,25 @@ def units_by_tower(tower_id):
     return jsonify({
         'unit':unit.to_dict()
     })
+
+@units_bp.route('/available', methods=['GET'])
+@jwt_required()
+def get_available_units():
+    units = Unit.query.filter_by(status='available').all()
+
+    return jsonify([
+        {
+            'id': u.id,
+            'tower_id': u.tower_id,
+            'unit_id': u.unit_id,
+            'floor': u.floor,
+            'bedrooms': u.bedrooms,
+            'bathrooms': u.bathrooms,
+            'area_sqft': u.area_sqft,
+            'rent': u.rent,
+            'status': u.status,
+            'description': u.description,
+            'image_url': u.image_url
+        }
+        for u in units
+    ]), 200

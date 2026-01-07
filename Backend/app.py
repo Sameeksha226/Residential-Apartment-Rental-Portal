@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from flask_cors import CORS
 from models import db,Users,Tower,Unit,Amenity,Bookings,Lease,Payment
 import models
-from datetime import date, time
+from datetime import date, time,timedelta
 from routes.auth import auth_bp
 from routes.bookings import bookings_bp
 from routes.units import units_bp
@@ -20,8 +20,9 @@ from routes.lease_payment import lease_bp
 app=Flask(__name__)
 
 app.config["JWT_SECRET_KEY"]=os.getenv("JWT_SECRET_KEY")
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL"," YOUR_DEFAULT_DATABASE_URL_HERE")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL","postgresql://postgres:snayak@localhost:5432/apt")
 app.config["JWT_TOKEN_LOCATION"] = ["headers"]
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
 
 CORS(
     app,

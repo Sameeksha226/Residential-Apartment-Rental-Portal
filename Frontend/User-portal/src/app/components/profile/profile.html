@@ -8,10 +8,7 @@
 
         <!-- Profile Picture -->
         <div class="w-28 h-28 mx-auto rounded-full overflow-hidden shadow">
-          <img
-            src="https://images.unsplash.com/photo-1607746882042-944635dfe10e"
-            class="w-full h-full object-cover"
-          />
+          <img src="https://images.unsplash.com/photo-1607746882042-944635dfe10e" class="w-full h-full object-cover" />
         </div>
 
         <!-- User Info -->
@@ -26,30 +23,21 @@
         <!-- Tabs -->
         <div class="space-y-3 text-left">
 
-          <button
-            class="w-full px-4 py-2 rounded-lg font-medium transition"
-            [ngClass]="activeTab === 'bookings'
+          <button class="w-full px-4 py-2 rounded-lg font-medium transition" [ngClass]="activeTab === 'bookings'
               ? 'bg-blue-200 text-blue-800'
-              : 'bg-blue-100 text-blue-700 hover:bg-blue-200'"
-            (click)="setTab('bookings')">
+              : 'bg-blue-100 text-blue-700 hover:bg-blue-200'" (click)="setTab('bookings')">
             📘 My Bookings
           </button>
 
-          <button
-            class="w-full px-4 py-2 rounded-lg font-medium transition"
-            [ngClass]="activeTab === 'payments'
+          <button class="w-full px-4 py-2 rounded-lg font-medium transition" [ngClass]="activeTab === 'payments'
               ? 'bg-green-200 text-green-800'
-              : 'bg-green-100 text-green-700 hover:bg-green-200'"
-            (click)="setTab('payments')">
+              : 'bg-green-100 text-green-700 hover:bg-green-200'" (click)="setTab('payments')">
             💳 Payments
           </button>
 
-          <button
-            class="w-full px-4 py-2 rounded-lg font-medium transition"
-            [ngClass]="activeTab === 'leases'
+          <button class="w-full px-4 py-2 rounded-lg font-medium transition" [ngClass]="activeTab === 'leases'
               ? 'bg-purple-200 text-purple-800'
-              : 'bg-purple-100 text-purple-700 hover:bg-purple-200'"
-            (click)="setTab('leases')">
+              : 'bg-purple-100 text-purple-700 hover:bg-purple-200'" (click)="setTab('leases')">
             📝 Leases
           </button>
 
@@ -71,10 +59,7 @@
             No bookings found.
           </div>
 
-          <div
-            *ngFor="let b of bookings"
-            class="mb-4 p-5 bg-gray-50 rounded-xl shadow-sm"
-          >
+          <div *ngFor="let b of bookings" class="mb-4 p-5 bg-gray-50 rounded-xl shadow-sm">
             <p><strong>Unit:</strong> {{ b.unit_name }}</p>
             <p><strong>Tower:</strong> {{ b.tower_name }}</p>
             <p class="text-sm text-gray-600">
@@ -83,9 +68,7 @@
 
             <p class="mt-2">
               <strong>Status:</strong>
-              <span
-                class="px-3 py-1 rounded-full text-sm ml-2"
-                [ngClass]="{
+              <span class="px-3 py-1 rounded-full text-sm ml-2" [ngClass]="{
                   'bg-green-200 text-green-800': b.status === 'approved',
                   'bg-yellow-200 text-yellow-800': b.status === 'pending',
                   'bg-red-200 text-red-800': b.status === 'rejected'
@@ -111,20 +94,16 @@
             No payments found.
           </div>
 
-          <div
-            *ngFor="let p of payments"
-            class="mb-4 p-5 bg-gray-50 rounded-xl shadow-sm"
-          >
+          <div *ngFor="let p of payments" class="mb-4 p-5 bg-gray-50 rounded-xl shadow-sm">
             <p><strong>Payment ID:</strong> {{ p.id }}</p>
+            <p><strong>Lease ID:</strong> {{ p.lease_id }}</p>
             <p><strong>Date:</strong> {{ p.payment_date }}</p>
             <p><strong>Method:</strong> {{ p.payment_method }}</p>
             <p><strong>Amount:</strong> ₹{{ p.amount }}</p>
 
             <p>
               <strong>Status:</strong>
-              <span
-                class="px-3 py-1 rounded-full text-sm ml-2"
-                [ngClass]="{
+              <span class="px-3 py-1 rounded-full text-sm ml-2" [ngClass]="{
                   'bg-green-200 text-green-800': p.status === 'paid',
                   'bg-yellow-200 text-yellow-800': p.status === 'pending'
                 }">
@@ -135,6 +114,25 @@
             <p class="text-sm text-gray-600">
               Txn ID: {{ p.transaction_id }}
             </p>
+          </div>
+          <!-- PAY BUTTON (ONLY IF ACTIVE LEASE & NO PAYMENT) -->
+          <div *ngFor="let l of leases" class="mt-6">
+            <div *ngIf="!hasPaid(l.id)" class="p-4 bg-green-50 rounded-xl">
+              <p class="mb-2 font-semibold">
+                Rent Due: ₹{{ l.rent_amount }}
+              </p>
+
+              <select [(ngModel)]="paymentMethod" class="w-full p-2 border rounded mb-3">
+                <option value="">Select Payment Method</option>
+                <option value="UPI">UPI</option>
+                <option value="NEFT">NEFT</option>
+                <option value="Credit Card">Credit Card</option>
+              </select>
+
+              <button class="w-full bg-green-600 text-white py-2 rounded" (click)="payNow(l)">
+                Pay ₹{{ l.rent_amount }}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -148,10 +146,7 @@
             No leases found.
           </div>
 
-          <div
-            *ngFor="let l of leases"
-            class="mb-4 p-5 bg-gray-50 rounded-xl shadow-sm"
-          >
+          <div *ngFor="let l of leases" class="mb-4 p-5 bg-gray-50 rounded-xl shadow-sm">
             <p><strong>Unit:</strong> {{ l.unit_id }}</p>
             <p><strong>Start:</strong> {{ l.start_date }}</p>
             <p><strong>End:</strong> {{ l.end_date }}</p>
@@ -159,8 +154,7 @@
 
             <p>
               <strong>Status:</strong>
-              <span
-                class="px-3 py-1 rounded-full text-sm ml-2 bg-purple-200 text-purple-800">
+              <span class="px-3 py-1 rounded-full text-sm ml-2 bg-purple-200 text-purple-800">
                 {{ l.status }}
               </span>
             </p>

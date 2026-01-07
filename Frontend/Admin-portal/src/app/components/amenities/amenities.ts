@@ -39,6 +39,7 @@ export class Amenities implements OnInit {
 
  saveAmenity() {
     const payload = {
+      tower_id:this.amenityForm.tower_id,
       name: this.amenityForm.name?.trim(),
       description: this.amenityForm.description,
       capacity: Number(this.amenityForm.capacity),
