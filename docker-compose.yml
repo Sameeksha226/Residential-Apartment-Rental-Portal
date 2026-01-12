@@ -1,0 +1,46 @@
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: apartment_db
+    restart: always
+    environment:
+      POSTGRES_DB: apt
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: snayak
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build: ./backend
+    container_name: flask_backend
+    restart: always
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app
+
+  admin-portal:
+    build: ./frontend/Admin-portal
+    container_name: admin_portal
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+
+  user-portal:
+    build: ./frontend/User-portal
+    container_name: user_portal
+    ports:
+      - "4280:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
