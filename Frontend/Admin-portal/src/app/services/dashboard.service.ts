@@ -51,6 +51,12 @@ export class DashboardService {
   deleteBooking(id: number): Observable<any> {
     return this.http.delete(`${this.API_URL}/bookings/delete/${id}`);
   }
+
+  getUnitOccupant(unitId: number) {
+  return this.http.get<any>(
+    `${this.API_URL}/bookings/unit-occupant/${unitId}`
+  );
+}
   
   getTowers(): Observable<any[]> {
     return this.http.get<any[]>(`${this.API_URL}/towers/`);
@@ -76,14 +82,21 @@ export class DashboardService {
     return this.http.delete(`${this.API_URL}/towers/delete/${id}`);
   }
 
+  getUnitsByTower(towerId: number) {
+  return this.http.get<any[]>(
+    `${this.API_URL}/units/units-by-tower/${towerId}`
+  );
+}
+
+
   // GET all units
   getUnits() {
   return this.http.get<any[]>(`${this.API_URL}/units/`);
 }
 
 // GET single unit
- getUnitById(id: number) {
-  return this.http.get<any>(`${this.API_URL}/units/get/${id}`);
+ getUnitById() {
+  return this.http.get<any>(`${this.API_URL}/units/get`);
 }
 
 // CREATE unit (admin)
@@ -110,7 +123,7 @@ deleteUnit(id: number) {
 }
 
 getAmenities() {
-  return this.http.get<any[]>(`${this.API_URL}/amenities/`);
+  return this.http.get<any[]>(`${this.API_URL}/amenities/get`);
 }
 
 createAmenity(data: any) {
@@ -148,5 +161,71 @@ getUserLeases(userId: number) {
 getUserPayments(userId: number) {
   return this.http.get<any[]>(`${this.API_URL}/lease/payments/user/${userId}`);
 }
+
+// Lease
+
+getLeases() {
+  return this.http.get<any[]>(`${this.API_URL}/lease/`);
+}
+
+updateLease(id: number, payload: any) {
+  return this.http.patch(`${this.API_URL}/lease/update/${id}`, payload);
+}
+
+deleteLease(id: number) {
+  return this.http.delete(`${this.API_URL}/lease/delete/${id}`);
+}
+
+getPaymentsByLease(leaseId: number) {
+  return this.http.get<any[]>(`${this.API_URL}/lease/payments-by-lease/${leaseId}`);
+}
+
+//Messages
+
+// Get messages with a user
+getUserMessages(userId: number) {
+  return this.http.get<any[]>(
+    `${this.API_URL}/auth/messages/conversation/${userId}`
+  );
+}
+
+// Send message
+sendMessage(receiverId: number, message: string) {
+  return this.http.post(
+    `${this.API_URL}/auth/messages`,
+    {
+      receiver_id: receiverId,
+       message
+    }
+  );
+}
+
+updateMessage(messageId: number, message: string) {
+    return this.http.put(`${this.API_URL}/auth/messages/update/${messageId}`, { message });
+  }
+
+  deleteMessage(messageId: number) {
+    return this.http.delete(`${this.API_URL}/auth/messages/delete/${messageId}`);
+  }
+
+  getBookingReport() {
+  return this.http.get<any[]>(`${this.API_URL}/admin_reports/bookings`);
+}
+
+getRevenueReport() {
+  return this.http.get<any[]>(`${this.API_URL}/admin_reports/revenue`);
+}
+
+getUserReport() {
+  return this.http.get<any[]>(`${this.API_URL}/admin_reports/users`);
+}
+
+downloadAllReportsCSV() {
+  return this.http.get(
+    `${this.API_URL}/admin_reports/csv`,
+    { responseType: 'blob' }
+  );
+}
+
 
 }

@@ -26,6 +26,11 @@
               <td class="p-3">{{item.address}}</td>
               <td class="p-3">{{item.total_floors}}</td>
               <td class="p-3 flex gap-2">
+                <button
+                  class="px-3 py-1 bg-indigo-500 text-white rounded-lg"
+                  (click)="viewUnits(item)">
+                  View Units
+                </button>
                 <button (click)="editTower(item)" class="px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600">
                   Edit
                 </button>
@@ -34,9 +39,48 @@
                 </button>
               </td>
             </tr>
-          }
 
-            <!-- Add your dynamic rows here -->
+            <!-- UNITS ROW -->
+            @if (selectedTower?.id === item.id) {
+            <tr>
+              <td colspan="5" class="bg-gray-50 p-4">
+                <h4 class="font-semibold mb-3 text-blue-700">
+                  Units in {{ item.name }}
+                </h4>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div
+                    *ngFor="let u of unitList"
+                    class="bg-white border rounded-xl p-4 shadow-sm"
+                  >
+                    <p><b>ID:</b> {{ u.id }}</p>
+                    <p><b>Unit ID:</b> {{ u.unit_id }}</p>
+                    <p><b>Floor:</b> {{ u.floor }}</p>
+                    <p>
+                      <b>Status:</b>
+                      <span
+  class="px-2 py-1 rounded text-sm"
+  [ngClass]="{
+    'bg-green-100 text-green-700': u.status === 'available',
+    'bg-red-100 text-red-700': u.status === 'occupied',
+    'bg-yellow-100 text-yellow-700': u.status === 'maintenance'
+  }"
+>
+  {{ u.status | titlecase }}
+</span>
+
+                    </p>
+                  </div>
+                </div>
+
+                <p *ngIf="!unitList.length" class="text-gray-400">
+                  No units found
+                </p>
+              </td>
+            </tr>
+            }
+
+            }
 
           </tbody>
         </table>
@@ -49,12 +93,6 @@
         <h2 class="text-2xl font-semibold mb-4">Add / Edit Tower</h2>
 
         <form class="space-y-4" (ngSubmit)="saveTower()">
-
-          <!-- Tower ID -->
-          <div>
-            <label class="block text-sm font-medium mb-1">Tower ID</label>
-            <input type="number" [(ngModel)]="towerForm.id" name="id" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400" placeholder="Enter tower id">
-          </div>
 
           <!-- Name -->
           <div>

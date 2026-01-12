@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity,get_jwt
-from models import db,Users
+from models import db,Users,Message
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -112,5 +112,126 @@ def delete_user(user_id):
 
     return jsonify({'message': 'User deleted successfully'})
 
+def get_admin_ids():
+    admins = Users.query.filter_by(role='admin').all()
+    return [a.id for a in admins]
 
+@auth_bp.route('/messages', methods=['POST'])
+@jwt_required()
+def send_message():
+    sender_id = get_jwt_identity()
+    data = request.json
+    message_text = data['message']
+
+    sender = Users.query.get(sender_id)
+
+    # USER → ALL ADMINS
+    if sender.role == 'user':
+        admin_ids = get_admin_ids()
+        messages = []
+
+        for admin_id in admin_ids:
+            msg = Message(
+                sender_id=sender_id,
+                receiver_id=admin_id,
+                message=message_text
+            )
+            db.session.add(msg)
+            messages.append(msg)
+
+        db.session.commit()
+        return jsonify({'message': 'Sent to admins'}), 201
+
+    # ADMIN → USER
+    else:
+        receiver_id = data['receiver_id']
+
+        msg = Message(
+            sender_id=sender_id,
+            receiver_id=receiver_id,
+            message=message_text
+        )
+        db.session.add(msg)
+        db.session.commit()
+
+        return jsonify(msg.to_dict()), 201
+
+@auth_bp.route('/messages/conversation/<int:user_id>', methods=['GET'])
+@jwt_required()
+def get_conversation(user_id):
+    admin_id = get_jwt_identity()
+
+    messages = Message.query.filter(
+        ((Message.sender_id == admin_id) & (Message.receiver_id == user_id)) |
+        ((Message.sender_id == user_id) & (Message.receiver_id == admin_id))
+    ).order_by(Message.created_at.asc()).all()
+
+    return jsonify([m.to_dict() for m in messages])
+
+# ---------------- EDIT MESSAGE ----------------
+@auth_bp.route('/messages/update/<int:msg_id>', methods=['PUT'])
+@jwt_required()
+def update_message(msg_id):
+    current_user = get_jwt_identity()
+    msg = Message.query.get_or_404(msg_id)
+
+    if msg.sender_id != current_user:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    msg.message = request.json.get('message', msg.message)
+    db.session.commit()
+
+    return jsonify(msg.to_dict())
+
+# ---------------- DELETE MESSAGE ----------------
+@auth_bp.route('/messages/delete/<int:msg_id>', methods=['DELETE'])
+@jwt_required()
+def delete_message(msg_id):
+    current_user = get_jwt_identity()
+    msg = Message.query.get_or_404(msg_id)
+
+    if msg.sender_id != current_user:
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    db.session.delete(msg)
+    db.session.commit()
+
+    return jsonify({'message': 'Deleted'})
+
+
+@auth_bp.route('/messages/read/<int:id>', methods=['PUT'])
+@jwt_required()
+def mark_read(id):
+    msg = Message.query.get_or_404(id)
+    msg.is_read = True
+    db.session.commit()
+    return jsonify({'message': 'Marked as read'})
+
+@auth_bp.route('/messages/user', methods=['GET'])
+@jwt_required()
+def get_user_messages():
+    user_id = get_jwt_identity()
+
+    messages = Message.query.filter(
+        (Message.sender_id == user_id) |
+        (Message.receiver_id == user_id)
+    ).order_by(Message.created_at.asc()).all()
+
+    return jsonify([m.to_dict() for m in messages])
+
+@auth_bp.route('/messages/admin/<int:user_id>', methods=['GET'])
+@jwt_required()
+def get_admin_messages(user_id):
+    admin_id = get_jwt_identity()
+
+    admin = Users.query.get(admin_id)
+    if admin.role != 'admin':
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    messages = Message.query.filter(
+        ((Message.sender_id == user_id) & (Message.receiver_id == admin_id)) |
+        ((Message.sender_id == admin_id) & (Message.receiver_id == user_id))
+    ).order_by(Message.created_at.asc()).all()
+
+    return jsonify([m.to_dict() for m in messages])
 

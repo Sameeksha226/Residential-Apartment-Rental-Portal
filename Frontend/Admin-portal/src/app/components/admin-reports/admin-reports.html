@@ -1,0 +1,59 @@
+<div class="p-6 bg-gray-100 min-h-screen">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-800">Admin Reports</h1>
+    <button
+      (click)="downloadCSV()"
+      class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+      Download CSV
+    </button>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- BOOKINGS -->
+    <div class="bg-white p-4 rounded-xl shadow">
+      <h2 class="font-semibold mb-3">Booking Status</h2>
+      <table class="w-full text-sm border">
+        <tr class="bg-gray-100">
+          <th class="border p-2">Status</th>
+          <th class="border p-2">Count</th>
+        </tr>
+        <tr *ngFor="let b of bookingReport">
+          <td class="border p-2">{{ b.status }}</td>
+          <td class="border p-2 text-center">{{ b.count }}</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- REVENUE -->
+    <div class="bg-white p-4 rounded-xl shadow">
+      <h2 class="font-semibold mb-3">Monthly Revenue</h2>
+      <table class="w-full text-sm border">
+        <tr class="bg-gray-100">
+          <th class="border p-2">Month</th>
+          <th class="border p-2">Revenue (₹)</th>
+        </tr>
+        <tr *ngFor="let r of revenueReport">
+          <td class="border p-2">{{ r.month }}</td>
+          <td class="border p-2 text-right">{{ r.total | number }}</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- USERS -->
+    <div class="bg-white p-4 rounded-xl shadow">
+      <h2 class="font-semibold mb-3">User Registrations</h2>
+      <table class="w-full text-sm border">
+        <tr class="bg-gray-100">
+          <th class="border p-2">Month</th>
+          <th class="border p-2">Users</th>
+        </tr>
+        <tr *ngFor="let u of userReport">
+          <td class="border p-2">{{ u.month }}</td>
+          <td class="border p-2 text-center">{{ u.count }}</td>
+        </tr>
+      </table>
+    </div>
+
+  </div>
+</div>

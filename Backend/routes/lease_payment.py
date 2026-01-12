@@ -1,5 +1,5 @@
 from flask import Blueprint,request,jsonify
-from models import db,Lease,Payment,Unit,Tower
+from models import db,Lease,Payment,Unit,Tower,Users
 from flask_jwt_extended import jwt_required, get_jwt_identity,get_jwt
 
 lease_bp=Blueprint('lease',__name__)
@@ -57,10 +57,10 @@ def create_lease():
 @lease_bp.route("/", methods=['GET'])
 @jwt_required()
 def list_leases():
-    identity = int(get_jwt_identity())
-    role = get_jwt()['role']
+    user_id = int(get_jwt_identity())
+    claims = get_jwt()
 
-    if role == 'admin':
+    if claims.get('role') == 'admin':
         leases = (
             db.session.query(Lease, Unit, Tower)
             .join(Unit, Lease.unit_id == Unit.id)
@@ -83,7 +83,7 @@ def list_leases():
             db.session.query(Lease, Unit, Tower)
             .join(Unit, Lease.unit_id == Unit.id)
             .join(Tower, Unit.tower_id == Tower.id)
-            .filter(Lease.user_id == identity)
+            .filter(Lease.user_id == user_id)
             .all()
         )
 
@@ -140,9 +140,10 @@ def get_user_leases(user_id):
 @lease_bp.route("/update/<int:lease_id>",methods=['PATCH'])
 @jwt_required()
 def update_lease(lease_id):
-    identity=get_jwt_identity()
-    role=get_jwt()['role']
-    if role !='admin':
+    user_id = int(get_jwt_identity())
+    claims = get_jwt()
+
+    if claims.get('role') != 'admin':
         return jsonify({"message":"admin only"}),403
     l=Lease.query.get_or_404(lease_id)
     data=request.get_json() or {}
@@ -157,9 +158,9 @@ def update_lease(lease_id):
 @lease_bp.route("delete/<int:lease_id>",methods=['DELETE'])
 @jwt_required()
 def delete_lease(lease_id):
-    identity=get_jwt_identity()
-    role=get_jwt()['role']
-    if role !='admin':
+    user_id = int(get_jwt_identity())
+    claims = get_jwt()
+    if claims.get('role') != 'admin':
         return jsonify({"message":"admin only"}),403
     l=Lease.query.get_or_404(lease_id)
     db.session.delete(l)
@@ -182,11 +183,36 @@ def create_payment():
     lease = Lease.query.filter_by(id=lease_id, user_id=user_id).first()
     if not lease:
         return jsonify({'message': 'Invalid lease'}), 404
+    
+    today = datetime.utcnow().date()
+    current_year = today.year
+    current_month = today.month
+
+    # 🔒 Check if payment already done THIS MONTH
+    monthly_payment = (
+        Payment.query
+        .filter(
+            Payment.lease_id == lease_id,
+            db.extract('year', Payment.payment_date) == current_year,
+            db.extract('month', Payment.payment_date) == current_month
+        )
+        .first()
+    )
+
+    if monthly_payment:
+        return jsonify({'message': 'Rent already paid for this month'}), 400
+
+    # 🔥 FIRST PAYMENT = Deposit + Rent
+    previous_payments_count = Payment.query.filter_by(lease_id=lease_id).count()
+
+    amount = float(lease.rent_amount)
+    if previous_payments_count == 0:
+        amount += lease.deposit
 
     payment = Payment(
         lease_id=lease_id,
         amount=amount,
-        payment_date=datetime.utcnow().date(),
+        payment_date=today,
         payment_method=payment_method,
         status='completed',
         transaction_id=f"TXN{int(datetime.utcnow().timestamp())}"
@@ -195,7 +221,7 @@ def create_payment():
     db.session.add(payment)
     db.session.commit()
 
-    return jsonify({'message': 'Payment successful'}), 201
+    return jsonify({'message': 'Payment successful','amount paid':amount}), 201
 
 
 
@@ -238,3 +264,8 @@ def get_user_payments(user_id):
         }
         for p in payments
     ]), 200
+
+@lease_bp.route('/payments-by-lease/<int:lease_id>', methods=['GET'])
+def payments_by_lease(lease_id):
+    payments = Payment.query.filter_by(lease_id=lease_id).all()
+    return jsonify([p.to_dict() for p in payments])

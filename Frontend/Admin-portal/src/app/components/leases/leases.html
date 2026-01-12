@@ -1,0 +1,187 @@
+<div class="min-h-screen bg-gray-50 p-8">
+
+  <!-- PAGE TITLE -->
+  <h2 class="text-3xl font-semibold mb-6">Lease Management</h2>
+
+  <!-- LEASE TABLE -->
+  <div class="bg-white rounded-2xl shadow p-6 mb-10">
+
+    <table class="w-full border-collapse text-base">
+      <thead>
+        <tr class="bg-gray-100 text-left">
+          <th class="p-4">Lease ID</th>
+          <th class="p-4">User ID</th>
+          <th class="p-4">Unit ID</th>
+          <th class="p-4">Start Date</th>
+          <th class="p-4">End Date</th>
+          <th class="p-4">Rent</th>
+          <th class="p-4">Deposit</th>
+          <th class="p-4">Status</th>
+          <th class="p-4">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody class="divide-y">
+
+        @for (l of leaseList; track l.id) {
+        <tr>
+
+          <td class="p-4 font-medium">{{ l.id }}</td>
+          <td class="p-4">{{ l.user_id }}</td>
+          <td class="p-4">{{ l.unit_id }}</td>
+          <td class="p-4">{{ l.start_date }}</td>
+          <td class="p-4">{{ l.end_date }}</td>
+          <td class="p-4">₹{{ l.rent_amount }}</td>
+          <td class="p-4">₹{{ l.deposit }}</td>
+
+          <td class="p-4">
+            <span
+              class="px-3 py-1 rounded-full text-sm font-medium"
+              [ngClass]="{
+                'bg-green-100 text-green-700': l.status === 'active',
+                'bg-red-100 text-red-700': l.status === 'terminated',
+                'bg-gray-200 text-gray-700': l.status === 'expired'
+              }"
+            >
+              {{ l.status | titlecase }}
+            </span>
+          </td>
+
+          <td class="p-4 flex gap-3">
+            <button
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm"
+              (click)="openEdit(l)">
+              Edit
+            </button>
+
+            <button
+              class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm"
+              (click)="togglePayments(l.id)">
+              Payments
+            </button>
+
+            <button
+              class="px-4 py-2 bg-red-600 text-white rounded-lg text-sm"
+              (click)="deleteLease(l.id)">
+              Delete
+            </button>
+          </td>
+        </tr>
+
+        <!-- PAYMENTS ROW -->
+        @if (expandedLeaseId === l.id) {
+        <tr>
+          <td colspan="9" class="bg-gray-50 p-6">
+
+            <h4 class="text-lg font-semibold mb-4 text-indigo-700">
+              Payments for Lease #{{ l.id }}
+            </h4>
+
+            <table class="w-full text-sm border rounded-lg overflow-hidden">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="p-3">Amount</th>
+                  <th class="p-3">Date</th>
+                  <th class="p-3">Method</th>
+                  <th class="p-3">Status</th>
+                  <th class="p-3">Transaction ID</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr *ngFor="let p of paymentsMap[l.id]">
+                  <td class="p-3">₹{{ p.amount }}</td>
+                  <td class="p-3">{{ p.payment_date }}</td>
+                  <td class="p-3">{{ p.payment_method }}</td>
+                  <td class="p-3">{{ p.status }}</td>
+                  <td class="p-3">{{ p.transaction_id }}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <p *ngIf="!paymentsMap[l.id]?.length"
+               class="text-gray-400 mt-3">
+              No payments found
+            </p>
+
+          </td>
+        </tr>
+        }
+        }
+
+      </tbody>
+    </table>
+  </div>
+
+  <!-- EDIT LEASE FORM (BELOW TABLE) -->
+  @if (editLease) {
+  <div class="bg-white rounded-2xl shadow p-8">
+
+    <h3 class="text-2xl font-semibold mb-6">
+      Edit Lease #{{ editLease.id }}
+    </h3>
+
+    <form class="grid grid-cols-1 md:grid-cols-2 gap-6"
+          (ngSubmit)="saveLease()">
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Start Date</label>
+        <input type="date"
+               [(ngModel)]="editLease.start_date"
+               name="start_date"
+               class="w-full border p-3 rounded-lg">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">End Date</label>
+        <input type="date"
+               [(ngModel)]="editLease.end_date"
+               name="end_date"
+               class="w-full border p-3 rounded-lg">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Rent Amount</label>
+        <input type="number"
+               [(ngModel)]="editLease.rent_amount"
+               name="rent_amount"
+               class="w-full border p-3 rounded-lg">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Deposit</label>
+        <input type="number"
+               [(ngModel)]="editLease.deposit"
+               name="deposit"
+               class="w-full border p-3 rounded-lg">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Status</label>
+        <select [(ngModel)]="editLease.status"
+                name="status"
+                class="w-full border p-3 rounded-lg">
+          <option value="active">Active</option>
+          <option value="terminated">Terminated</option>
+          <option value="expired">Expired</option>
+        </select>
+      </div>
+
+      <div class="flex items-end gap-4">
+        <button type="submit"
+                class="px-6 py-3 bg-blue-600 text-white rounded-xl">
+          Save Changes
+        </button>
+
+        <button type="button"
+                class="px-6 py-3 border rounded-xl"
+                (click)="editLease=null">
+          Cancel
+        </button>
+      </div>
+
+    </form>
+  </div>
+  }
+
+</div>

@@ -43,7 +43,10 @@ export class Bookings implements OnInit {
       alert('Booking created');
       this.resetForm();
       this.loadBookings();
-    });
+    }, error => {
+      alert(error.error.message);
+    }
+  );
   }
 
   editBooking(b: any) {

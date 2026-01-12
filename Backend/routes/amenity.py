@@ -1,4 +1,4 @@
-from models import db,Amenity,Lease,Payment
+from models import db,Amenity,Lease,Payment,Tower
 from flask import Blueprint,request,jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity,get_jwt
 
@@ -14,7 +14,7 @@ def list_amenities():   #listing all the amenities
                     'name': a.name,
                     'description': a.description,
                     'capacity': a.capacity,
-                    'available': a.available
+                    'image_url':a.image_url
                     })
     return jsonify(out)
 
@@ -26,14 +26,10 @@ def create_amenity():
     if role !='admin':
         return jsonify({"message":"admin only"}),403
     data=request.get_json() or {}
-    ava=data.get('available')
-    ap=True if ava==True else False
     a=Amenity(tower_id=data.get('tower_id'),
               name=data.get('name'),
               description=data.get('description'),
               capacity=data.get('capacity'),
-              available=ap,
-              icon=data.get('icon'),
               image_url=data.get('image_url'))
     db.session.add(a)
     db.session.commit()
@@ -51,7 +47,6 @@ def update_amenity(amenity_id):
     a.name=data.get('name',a.name)
     a.description=data.get('description',a.description)
     a.capacity=data.get('capacity',a.capacity)
-    a.available=data.get('available',a.available)
     db.session.commit()
     return jsonify({"message":"Amenity updated"}),200
 
@@ -66,3 +61,24 @@ def delete_amenity(amenity_id):
     db.session.delete(a)
     db.session.commit()
     return jsonify({"message":"Amenity deleted"}),200
+
+@amenity_bp.route('/get', methods=['GET'])
+@jwt_required()
+def get_amenities():
+    amenities = db.session.query(Amenity, Tower)\
+        .join(Tower, Amenity.tower_id == Tower.id)\
+        .all()
+
+    result = []
+    for a, t in amenities:
+        result.append({
+            "id": a.id,
+            "tower_id": t.id,
+            "tower_name": t.name,
+            "name": a.name,
+            "description": a.description,
+            "capacity": a.capacity,
+            "image_url": a.image_url
+        })
+
+    return jsonify(result)

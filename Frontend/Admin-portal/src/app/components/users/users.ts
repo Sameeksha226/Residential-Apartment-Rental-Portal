@@ -16,6 +16,11 @@ export class Users {
   userBookings: any[] = [];
   userLeases: any[] = [];
   userPayments: any[] = [];
+  messages: any[] = [];
+  newMessage = '';
+  editMessageId: number | null = null;
+  editMessageText = '';
+
 
   showForm = false;
   editMode = false;
@@ -39,8 +44,55 @@ export class Users {
     this.service.getUsers().subscribe(res => this.users = res);
   }
 
+  loadMessages(user: any) {
+  this.service
+    .getUserMessages(user.id)
+    .subscribe(res => {
+      this.messages = res;
+    });
+}
+
+startEditMessage(m: any) {
+  this.editMessageId = m.id;
+  this.editMessageText = m.message;
+}
+
+cancelEditMessage() {
+  this.editMessageId = null;
+  this.editMessageText = '';
+}
+
+saveEditMessage(user: any) {
+  if (!this.editMessageId) return;
+
+  this.service.updateMessage(this.editMessageId, this.editMessageText)
+    .subscribe(() => {
+      this.cancelEditMessage();
+      this.loadMessages(user);
+    });
+}
+
+deleteMessage(m: any, user: any) {
+  if (!confirm('Delete message?')) return;
+
+  this.service.deleteMessage(m.id)
+    .subscribe(() => this.loadMessages(user));
+}
+
+sendMessage(user: any) {
+  if (!this.newMessage.trim()) return;
+
+  this.service
+    .sendMessage(user.id, this.newMessage)
+    .subscribe(() => {
+      this.newMessage = '';
+      this.loadMessages(user);
+    });
+}
+
   selectUser(user: any) {
     this.selectedUser = user;
+    this.loadMessages(user)
 
     this.service.getUserBookings(user.id)
       .subscribe(res => this.userBookings = res);

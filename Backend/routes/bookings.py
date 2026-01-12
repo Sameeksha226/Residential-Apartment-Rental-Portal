@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from models import db, Bookings,Unit
+from models import db, Bookings,Unit,Users
 from datetime import datetime
 from flask_jwt_extended import (
     jwt_required,
@@ -15,22 +15,47 @@ bookings_bp = Blueprint('bookings', __name__)
 @bookings_bp.route("/create", methods=["POST"], strict_slashes=False)
 @jwt_required()
 def create_booking():
-    #user_id = int(get_jwt_identity())  # identity is STRING
     data = request.get_json() or {}
-    user_id=data.get("user_id")
+
+    user_id = data.get("user_id")
     unit_id = data.get("unit_id")
     start_date = data.get("start_date")
     end_date = data.get("end_date")
 
     if not user_id or not unit_id or not start_date or not end_date:
-        return jsonify({"message":"user_id, unit_id, start_date, end_date required"}), 422
+        return jsonify({
+            "message": "user_id, unit_id, start_date, end_date required"
+        }), 422
 
     try:
         start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
         end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
     except ValueError:
-        return jsonify({"message": "Date format must be YYYY-MM-DD"}), 400
+        return jsonify({
+            "message": "Date format must be YYYY-MM-DD"
+        }), 400
 
+    # ❌ SAME DATE NOT ALLOWED
+    if start_date == end_date:
+        return jsonify({
+            "message": "start_date and end_date cannot be the same"
+        }), 400
+
+    # ❌ START AFTER END NOT ALLOWED
+    if start_date > end_date:
+        return jsonify({
+            "message": "start_date cannot be after end_date"
+        }), 400
+
+    # 🔒 CHECK IF UNIT IS ALREADY BOOKED
+    existing_booking = Bookings.query.filter_by(unit_id=unit_id).first()
+
+    if existing_booking:
+        return jsonify({
+            "message": "Booking cannot be done. Unit is already booked."
+        }), 409
+
+    # ✅ CREATE BOOKING
     booking = Bookings(
         user_id=user_id,
         unit_id=unit_id,
@@ -45,6 +70,7 @@ def create_booking():
         "message": "Booking created",
         "id": booking.id
     }), 201
+
 
 
 # -------------------------------
@@ -150,9 +176,6 @@ def update_booking(booking_id):
     if "unit_id" in data:
         booking.unit_id=data["unit_id"]
 
-    if "amenity_id" in data:
-        booking.amenity_id=data["amenity_id"]
-
     if "start_date" in data:
         booking.start_date=data["start_date"]
     
@@ -220,3 +243,28 @@ def delete_unit(booking_id):
     db.session.delete(b)
     db.session.commit()
     return jsonify({'message':'Unit deleted'})
+
+@bookings_bp.route("/unit-occupant/<int:unit_id>", methods=["GET"])
+@jwt_required()
+def get_unit_occupant(unit_id):
+
+    booking = (
+        db.session.query(Bookings, Users)
+        .join(Users, Users.id == Bookings.user_id)
+        .filter(Bookings.unit_id == unit_id)
+        .first()
+    )
+
+    if not booking:
+        return jsonify({"message": "No occupant found"}), 404
+
+    booking_obj, user = booking
+
+    return jsonify({
+        "user_id": user.id,
+        "name": user.name,
+        "email": user.email,
+        "start_date": booking_obj.start_date.isoformat(),
+        "end_date": booking_obj.end_date.isoformat()
+    }), 200
+

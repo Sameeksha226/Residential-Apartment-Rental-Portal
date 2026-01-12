@@ -23,20 +23,29 @@ def list_units():   #listing all the units
                     })
     return jsonify(out)
         
-@units_bp.route('/get/<int:unit_id>',methods=['GET'])
-def get_unit(unit_id):   #get a unit details
-    u=Unit.query.get_or_404(unit_id)
-    return jsonify({'id':u.id,
-                    'tower_id': u.tower_id,
-                    'unit_id': u.unit_id,
-                    'floor': u.floor,
-                    'bedrooms': u.bedrooms,
-                    'bathrooms': u.bathrooms,
-                    'area_sqft': u.area_sqft,
-                    'rent':str(u.rent),
-                    'status': u.status,
-                    'description': u.description,
-                    'image_url': u.image_url})
+@units_bp.route('/get',methods=['GET'])
+def get_unit():   #get a unit details
+    units = db.session.query(Unit, Tower)\
+        .join(Tower, Unit.tower_id == Tower.id)\
+        .all()
+
+    result = []
+    for u, t in units:
+        result.append({
+            "id": u.id,
+            "unit_id": u.unit_id,
+            "tower_id": t.id,
+            "tower_name": t.name,
+            "floor": u.floor,
+            "bedrooms": u.bedrooms,
+            "bathrooms": u.bathrooms,
+            "rent": u.rent,
+            "status": u.status,
+            "image_url": u.image_url,
+            "description": u.description
+        })
+
+    return jsonify(result)
 
 @units_bp.route("/create",methods=['POST'])
 @jwt_required()
@@ -122,15 +131,6 @@ def unit_details(unit_id):
 @units_bp.route('/units-by-tower/<int:tower_id>',methods=['GET'])
 def units_by_tower(tower_id):
     unit=Unit.query.filter_by(tower_id=tower_id)
-    return jsonify({
-        'unit':unit.to_dict()
-    })
-
-@units_bp.route('/available', methods=['GET'])
-@jwt_required()
-def get_available_units():
-    units = Unit.query.filter_by(status='available').all()
-
     return jsonify([
         {
             'id': u.id,
@@ -144,6 +144,25 @@ def get_available_units():
             'status': u.status,
             'description': u.description,
             'image_url': u.image_url
-        }
-        for u in units
-    ]), 200
+        } for u in unit
+    ])
+
+@units_bp.route('/available', methods=['GET'])
+@jwt_required()
+def get_available_units():
+    units = (
+        Unit.query
+        .join(Tower)
+        .filter(Unit.status == 'available')
+        .all()
+    )
+
+    result = []
+    for u in units:
+        result.append({
+            **u.to_dict(),
+            "tower_name": u.tower.name,
+            "tower_address": u.tower.address  
+        })
+
+    return jsonify(result)

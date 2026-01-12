@@ -18,12 +18,17 @@ export class Profile implements OnInit {
   bookings: any[] = [];
   leases: any[] = [];
   payments: any[] = [];
+  messages: any[] = [];
+  newMessage = '';
+  editMessageId: number | null = null;
+  editMessageText = '';
 
   constructor(private service: DashboardService) {}
 
   ngOnInit() {
     this.loadProfile();
     this.loadBookings();
+    this.loadMessages();
   }
 
   setTab(tab: any) {
@@ -38,6 +43,32 @@ export class Profile implements OnInit {
 
 hasPaid(leaseId: number): boolean {
   return this.payments.some(p => p.lease_id === leaseId);
+}
+hasPaidThisMonth(leaseId: number): boolean {
+  const now = new Date();
+  const month = now.getMonth();
+  const year = now.getFullYear();
+
+  return this.payments.some(p => {
+    const d = new Date(p.payment_date);
+    return (
+      p.lease_id === leaseId &&
+      d.getMonth() === month &&
+      d.getFullYear() === year
+    );
+  });
+}
+
+getPayableAmount(lease: any): number {
+  const paymentsForLease = this.payments.filter(p => p.lease_id === lease.id);
+
+  // First payment → Deposit + Rent
+  if (paymentsForLease.length === 0) {
+    return Number(lease.deposit) + Number(lease.rent_amount);
+  }
+
+  // Monthly rent
+  return lease.rent_amount;
 }
 
 payNow(lease: any) {
@@ -80,4 +111,46 @@ payNow(lease: any) {
   loadPayments() {
     this.service.getPayments().subscribe(res => this.payments = res);
   }
+
+  loadMessages() {
+  this.service.getMyMessages()
+    .subscribe(res => this.messages = res);
+}
+
+sendMessageToAdmin() {
+  if (!this.newMessage.trim()) return;
+
+  this.service.sendMessageToAdmins(this.newMessage)
+    .subscribe(() => {
+      this.newMessage = '';
+      this.loadMessages();
+    });
+}
+
+startEdit(m: any) {
+  this.editMessageId = m.id;
+  this.editMessageText = m.message;
+}
+
+cancelEdit() {
+  this.editMessageId = null;
+  this.editMessageText = '';
+}
+
+saveEdit() {
+  if (!this.editMessageId) return;
+
+  this.service.updateMessage(this.editMessageId, this.editMessageText)
+    .subscribe(() => {
+      this.cancelEdit();
+      this.loadMessages();
+    });
+}
+
+deleteMessage(m: any) {
+  if (!confirm('Delete message?')) return;
+
+  this.service.deleteMessage(m.id)
+    .subscribe(() => this.loadMessages());
+}
 }

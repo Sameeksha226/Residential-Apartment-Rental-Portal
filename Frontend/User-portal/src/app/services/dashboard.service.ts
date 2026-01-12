@@ -70,6 +70,25 @@ getProfile() {
   );
 }
 
+/*  MESSAGES  */
+
+getMyMessages() {
+  return this.http.get<any[]>(`${this.API_URL}/auth/messages/user`);
+}
+
+sendMessageToAdmins( message: string) {
+  return this.http.post(`${this.API_URL}/auth/messages`, {
+    message
+  });
+}
+
+updateMessage(id: number, message: string) {
+  return this.http.put(`${this.API_URL}/auth/messages/update/${id}`, { message });
+}
+
+deleteMessage(id: number) {
+  return this.http.delete(`${this.API_URL}/auth/messages/delete/${id}`);
+}
 
 
 }

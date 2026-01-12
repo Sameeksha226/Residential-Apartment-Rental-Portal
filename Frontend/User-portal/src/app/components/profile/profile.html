@@ -6,11 +6,6 @@
     <div class="md:col-span-4">
       <div class="bg-white rounded-2xl shadow p-6 text-center">
 
-        <!-- Profile Picture -->
-        <div class="w-28 h-28 mx-auto rounded-full overflow-hidden shadow">
-          <img src="https://images.unsplash.com/photo-1607746882042-944635dfe10e" class="w-full h-full object-cover" />
-        </div>
-
         <!-- User Info -->
         <h2 class="text-2xl font-semibold text-blue-800 mt-4">
           {{ user?.name }}
@@ -102,14 +97,11 @@
             <p><strong>Amount:</strong> ₹{{ p.amount }}</p>
 
             <p>
-              <strong>Status:</strong>
-              <span class="px-3 py-1 rounded-full text-sm ml-2" [ngClass]="{
-                  'bg-green-200 text-green-800': p.status === 'paid',
-                  'bg-yellow-200 text-yellow-800': p.status === 'pending'
-                }">
-                {{ p.status }}
-              </span>
-            </p>
+      <strong>Status:</strong>
+      <span class="px-3 py-1 rounded-full text-sm ml-2 bg-green-200 text-green-800">
+        {{ p.status }}
+      </span>
+    </p>
 
             <p class="text-sm text-gray-600">
               Txn ID: {{ p.transaction_id }}
@@ -117,9 +109,9 @@
           </div>
           <!-- PAY BUTTON (ONLY IF ACTIVE LEASE & NO PAYMENT) -->
           <div *ngFor="let l of leases" class="mt-6">
-            <div *ngIf="!hasPaid(l.id)" class="p-4 bg-green-50 rounded-xl">
+            <div *ngIf="!hasPaidThisMonth(l.id)" class="p-4 bg-green-50 rounded-xl">
               <p class="mb-2 font-semibold">
-                Rent Due: ₹{{ l.rent_amount }}
+                Amount Due: ₹{{ getPayableAmount(l) }}
               </p>
 
               <select [(ngModel)]="paymentMethod" class="w-full p-2 border rounded mb-3">
@@ -130,7 +122,7 @@
               </select>
 
               <button class="w-full bg-green-600 text-white py-2 rounded" (click)="payNow(l)">
-                Pay ₹{{ l.rent_amount }}
+                Pay ₹{{ getPayableAmount(l) }}
               </button>
             </div>
           </div>
@@ -160,6 +152,79 @@
             </p>
           </div>
         </div>
+
+        <!-- ================= MESSAGES ================= -->
+<div class="mt-6 bg-white rounded-2xl shadow p-6">
+
+  <h2 class="text-2xl font-semibold text-orange-800 mb-4">
+    💬 Messages with Admin
+  </h2>
+
+  <div class="max-h-72 overflow-y-auto border rounded-lg p-3 mb-4 bg-gray-50">
+
+    <div *ngFor="let m of messages" class="mb-3">
+
+      <!-- VIEW MODE -->
+      <div *ngIf="editMessageId !== m.id">
+        <p class="text-sm">
+          <b>{{ m.sender_id === user.id ? 'You' : 'Admin' }}:</b>
+          {{ m.message }}
+        </p>
+
+        <p class="text-xs text-gray-400">
+          {{ m.created_at | date:'short' }}
+        </p>
+
+        <!-- USER ACTIONS -->
+        <div *ngIf="m.sender_id === user.id" class="flex gap-2 mt-1">
+          <button class="text-xs text-blue-600" (click)="startEdit(m)">
+            Edit
+          </button>
+          <button class="text-xs text-red-600" (click)="deleteMessage(m)">
+            Delete
+          </button>
+        </div>
+      </div>
+
+      <!-- EDIT MODE -->
+      <div *ngIf="editMessageId === m.id">
+        <textarea [(ngModel)]="editMessageText"
+          class="w-full border rounded p-2 text-sm mb-2"></textarea>
+
+        <div class="flex gap-2">
+          <button class="px-3 py-1 bg-green-600 text-white text-xs rounded"
+            (click)="saveEdit()">
+            Save
+          </button>
+
+          <button class="px-3 py-1 bg-gray-400 text-white text-xs rounded"
+            (click)="cancelEdit()">
+            Cancel
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <p *ngIf="!messages.length" class="text-gray-400 text-sm">
+      No messages yet
+    </p>
+  </div>
+
+  <!-- SEND MESSAGE -->
+  <textarea [(ngModel)]="newMessage"
+    rows="2"
+    placeholder="Message admin..."
+    class="w-full border rounded-lg p-2 mb-2">
+  </textarea>
+
+  <button class="w-full bg-orange-600 text-white py-2 rounded-lg"
+    (click)="sendMessageToAdmin()">
+    Send Message
+  </button>
+
+</div>
+
 
       </div>
     </div>

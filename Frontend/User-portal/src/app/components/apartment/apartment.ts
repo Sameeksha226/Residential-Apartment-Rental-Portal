@@ -12,11 +12,8 @@ import { Router } from '@angular/router';
 })
 export class Apartment implements OnInit {
 
-  towers: any[] = [];
   units: any[] = [];
   filteredUnits: any[] = [];
-
-  towerMap: { [key: number]: string } = {};
 
   // Filters
   searchText = '';
@@ -32,37 +29,30 @@ export class Apartment implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadTowersAndUnits();
+    this.loadUnits();
   }
 
-  loadTowersAndUnits() {
-    this.service.getTowers().subscribe(towers => {
-      this.towers = towers;
-
-      towers.forEach((t: any) => {
-        this.towerMap[t.id] = t.name;
-      });
-
-      this.service.getAvailableUnits().subscribe(units => {
-        this.units = units.map((u: any) => ({
-          ...u,
-          tower_name: this.towerMap[u.tower_id] ?? 'Unknown Tower'
-        }));
-
-        this.filteredUnits = [...this.units];
-      });
+  loadUnits() {
+    this.service.getAvailableUnits().subscribe(units => {
+      this.units = units;
+      this.filteredUnits = [...units];
     });
   }
 
   applyFilters() {
     this.filteredUnits = this.units.filter(u => {
 
+      /* 🔍 TEXT SEARCH: Unit + Tower + Location */
       if (this.searchText) {
         const t = this.searchText.toLowerCase();
-        if (
-          !u.unit_id.toLowerCase().includes(t) &&
-          !u.tower_name.toLowerCase().includes(t)
-        ) return false;
+
+        const unitMatch = u.unit_id?.toLowerCase().includes(t);
+        const towerMatch = u.tower_name?.toLowerCase().includes(t);
+        const locationMatch = u.tower_address?.toLowerCase().includes(t); // 👈 NEW
+
+        if (!unitMatch && !towerMatch && !locationMatch) {
+          return false;
+        }
       }
 
       if (this.minPrice !== null && u.rent < this.minPrice) return false;
@@ -82,7 +72,7 @@ export class Apartment implements OnInit {
     this.minArea = null;
     this.bedrooms = null;
     this.bathrooms = null;
-    this.applyFilters();
+    this.filteredUnits = [...this.units];
   }
 
   goToUnit(unit: any) {

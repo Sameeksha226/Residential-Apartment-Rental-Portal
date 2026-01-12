@@ -12,6 +12,10 @@ import { DashboardService } from '../../services/dashboard.service';
 export class Units implements OnInit {
 
   unitList: any[] = [];
+  towerList: any[] = [];
+  selectedOccupant: any = null;
+  showOccupantModal = false;
+
 
   unitForm: any = {
     id: null,
@@ -33,14 +37,21 @@ export class Units implements OnInit {
 
   ngOnInit(): void {
     this.loadUnits();
+    this.loadTowers();
   }
 
   loadUnits() {
-    this.dashboardService.getUnits().subscribe({
+    this.dashboardService.getUnitById().subscribe({
       next: (data) => this.unitList = data,
       error: (err) => console.error(err)
     });
   }
+
+  loadTowers() {
+  this.dashboardService.getTowers().subscribe(res => {
+    this.towerList = res;
+  });
+}
 
   saveUnit() {
     const payload = {
@@ -104,6 +115,24 @@ export class Units implements OnInit {
       }
     });
   }
+
+  viewOccupant(unit: any) {
+
+  if (unit.status !== 'occupied') {
+    alert('Unit is not occupied');
+    return;
+  }
+
+  this.dashboardService.getUnitOccupant(unit.id).subscribe({
+    next: res => {
+      this.selectedOccupant = res;
+      this.showOccupantModal = true;
+    },
+    error: err => {
+      alert(err.error?.message || 'No occupant data found');
+    }
+  });
+}
 
   resetForm() {
     this.isEdit = false;

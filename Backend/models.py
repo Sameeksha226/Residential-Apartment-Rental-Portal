@@ -17,7 +17,20 @@ class Users(db.Model):
     role = db.Column(db.String(20), default="user")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    bookings = db.relationship("Bookings", backref="user", lazy=True)
+    bookings = db.relationship("Bookings", backref="user", lazy=True,cascade="all, delete-orphan",passive_deletes=True)
+    sent_messages = db.relationship(
+        'Message',
+        foreign_keys='Message.sender_id',
+        back_populates='sender',
+        cascade='all, delete-orphan'
+    )
+
+    received_messages = db.relationship(
+        'Message',
+        foreign_keys='Message.receiver_id',
+        back_populates='receiver',
+        cascade='all, delete-orphan'
+    )
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -45,8 +58,8 @@ class Tower(db.Model):
     address = db.Column(db.String(250), nullable=False)
     total_floors = db.Column(db.Integer, nullable=False)
 
-    units = db.relationship('Unit', backref='tower', lazy=True, cascade='all, delete-orphan')
-    amenities = db.relationship('Amenity', backref='tower', lazy=True)
+    units = db.relationship('Unit', backref='tower', lazy=True, cascade='all, delete-orphan',passive_deletes=True)
+    amenities = db.relationship('Amenity', backref='tower', lazy=True,passive_deletes=True)
 
     def to_dict(self):
         return {
@@ -62,7 +75,7 @@ class Unit(db.Model):
     __tablename__ = 'unit'
 
     id = db.Column(db.Integer, primary_key=True,autoincrement=True)
-    tower_id = db.Column(db.Integer, db.ForeignKey('tower.id'), nullable=False)
+    tower_id = db.Column(db.Integer, db.ForeignKey('tower.id', ondelete="CASCADE"), nullable=False)
     unit_id = db.Column(db.String(50), nullable=False)
     floor = db.Column(db.Integer, nullable=False)
     bedrooms = db.Column(db.Integer, nullable=False)
@@ -73,7 +86,7 @@ class Unit(db.Model):
     description = db.Column(db.Text)
     image_url = db.Column(db.String(250))
 
-    bookings = db.relationship('Bookings', backref='unit', lazy=True)
+    bookings = db.relationship('Bookings', backref='unit', lazy=True,cascade="all, delete-orphan",passive_deletes=True)
 
     def to_dict(self):
         return {
@@ -100,11 +113,7 @@ class Amenity(db.Model):
     name = db.Column(db.String(250), nullable=False)
     description = db.Column(db.Text)
     capacity = db.Column(db.Integer)
-    available = db.Column(db.Boolean, default=True)
-    icon = db.Column(db.String(100))
     image_url = db.Column(db.String(750))
-
-    bookings = db.relationship("Bookings", backref="amenity", lazy=True)
 
     def to_dict(self):
         return {
@@ -113,8 +122,6 @@ class Amenity(db.Model):
             'name': self.name,
             'description': self.description,
             'capacity': self.capacity,
-            'available': self.available,
-            'icon': self.icon,
             'image_url': self.image_url
         }
 
@@ -124,13 +131,12 @@ class Bookings(db.Model):
     __tablename__ = 'bookings'
 
     id = db.Column(db.Integer, primary_key=True,autoincrement=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    unit_id = db.Column(db.Integer, db.ForeignKey('unit.id'))
-    amenity_id = db.Column(db.Integer, db.ForeignKey('amenity.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"))
+    unit_id = db.Column(db.Integer, db.ForeignKey('unit.id', ondelete="CASCADE"))
     status = db.Column(db.String(20), default='pending')
     booking_date = db.Column(db.DateTime, default=datetime.utcnow)
-    start_date = db.Column(db.Date)
-    end_date = db.Column(db.Date)
+    start_date = db.Column(db.Date,nullable=False)
+    end_date = db.Column(db.Date,nullable=False)
     admin_note = db.Column(db.Text)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -139,7 +145,6 @@ class Bookings(db.Model):
             'id': self.id,
             'user_id': self.user_id,
             'unit_id': self.unit_id,
-            'amenity_id': self.amenity_id,
             'status': self.status,
             'booking_date': self.booking_date.isoformat(),
             'start_date': self.start_date.isoformat() if self.start_date else None,
@@ -154,16 +159,16 @@ class Lease(db.Model):
     __tablename__ = 'lease'
 
     id = db.Column(db.Integer, primary_key=True,autoincrement=True)
-    booking_id = db.Column(db.Integer, db.ForeignKey('bookings.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    unit_id = db.Column(db.Integer, db.ForeignKey('unit.id'))
+    booking_id = db.Column(db.Integer, db.ForeignKey('bookings.id', ondelete="CASCADE"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"))
+    unit_id = db.Column(db.Integer, db.ForeignKey('unit.id', ondelete="CASCADE"))
     start_date = db.Column(db.Date)
     end_date = db.Column(db.Date)
     rent_amount = db.Column(db.Numeric(10, 2))
     deposit = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(100), default='active')
 
-    booking = db.relationship("Bookings", backref=db.backref("lease", uselist=False))
+    booking = db.relationship("Bookings", backref=db.backref("lease", uselist=False),lazy=True,passive_deletes=True)
 
     def to_dict(self):
         return {
@@ -184,14 +189,23 @@ class Payment(db.Model):
     __tablename__ = 'payment'
 
     id = db.Column(db.Integer, primary_key=True,autoincrement=True)
-    lease_id = db.Column(db.Integer, db.ForeignKey('lease.id'), nullable=False)
+    lease_id = db.Column(db.Integer, db.ForeignKey('lease.id', ondelete="CASCADE"), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     payment_date = db.Column(db.Date, nullable=False)
     payment_method = db.Column(db.String(50))
     status = db.Column(db.String(20), default='pending')
     transaction_id = db.Column(db.String(100))
 
-    lease = db.relationship("Lease", backref="payments")
+    lease = db.relationship(
+    "Lease",
+    backref=db.backref(
+        "payments",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    ),
+    lazy=True
+)
+
 
     def to_dict(self):
         return {
@@ -204,3 +218,44 @@ class Payment(db.Model):
             'transaction_id': self.transaction_id
         }
 
+class Message(db.Model):
+    __tablename__ = 'message'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+
+    # Who sent the message
+    sender_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), nullable=False)
+
+    # Who should receive the message
+    receiver_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete="CASCADE"), nullable=False)
+
+    # Message content
+    message = db.Column(db.Text, nullable=False)
+
+
+    # Read tracking
+    is_read = db.Column(db.Boolean, default=False)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    sender = db.relationship(
+        'Users',
+        foreign_keys=[sender_id],
+        back_populates='sent_messages'
+    )
+
+    receiver = db.relationship(
+        'Users',
+        foreign_keys=[receiver_id],
+        back_populates='received_messages'
+    )
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'sender_id': self.sender_id,
+            'receiver_id': self.receiver_id,
+            'message': self.message,
+            'is_read': self.is_read,
+            'created_at': self.created_at.isoformat()
+        }

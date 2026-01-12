@@ -13,6 +13,8 @@ import { DashboardService } from '../../services/dashboard.service';
 export class Towers implements OnInit {
 
   towerList: any[] = [];
+  selectedTower: any = null;
+  unitList: any[] = []; 
 
   towerForm: any = {
     id: null,
@@ -93,6 +95,22 @@ export class Towers implements OnInit {
       }
     });
   }
+
+  viewUnits(tower: any) {
+  if (this.selectedTower?.id === tower.id) {
+    this.selectedTower = null;
+    this.unitList = [];
+    return;
+  }
+
+  this.selectedTower = tower;
+
+  this.dashboardService
+    .getUnitsByTower(tower.id)
+    .subscribe(res => {
+      this.unitList = res;
+    });
+}
 
   // Reset form
   resetForm() {

@@ -42,6 +42,23 @@ export class UnitDetails implements OnInit {
   }
 
   requestVisit() {
-    alert('Visit request submitted');
+    
+  const message = `Requesting a demo visit for Unit 
+  🏢 Tower: ${this.unit.tower_name}
+🚪 Unit: ${this.unit.unit_id}
+📍 Location: ${this.unit.tower_address}
+💰 Rent: ₹${this.unit.rent}. Please contact me.`;
+
+  this.service.sendMessageToAdmins(message)
+    .subscribe({
+      next: () => {
+        alert('Demo visit request sent to admin');
+      },
+      error: () => {
+        alert('Failed to send request');
+      }
+    });
+
+
   }
 }

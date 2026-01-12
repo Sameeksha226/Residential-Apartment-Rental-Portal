@@ -11,14 +11,14 @@ import { DashboardService } from '../../services/dashboard.service';
 })
 export class Amenities implements OnInit {
   amenityList: any[]= [];
+  towerList: any[] = [];
+
   amenityForm: any = {
     id:null,
     tower_id: null,
     name: '',
     description: '',
     capacity: null,
-    available:'',
-    icon:'',
     image_url:''
   }
 
@@ -28,6 +28,7 @@ export class Amenities implements OnInit {
 
  ngOnInit(): void {
     this.loadAmenities();
+    this.loadTowers();
  }
 
  loadAmenities() {
@@ -37,21 +38,24 @@ export class Amenities implements OnInit {
     });
  }
 
+ loadTowers() {
+  this.dashboardService.getTowers().subscribe(res => {
+    this.towerList = res;
+  });
+}
+
  saveAmenity() {
     const payload = {
       tower_id:this.amenityForm.tower_id,
       name: this.amenityForm.name?.trim(),
       description: this.amenityForm.description,
       capacity: Number(this.amenityForm.capacity),
-      available: this.amenityForm.available,
-      icon: this.amenityForm.icon,
       image_url: this.amenityForm.image_url
     };
     // ✅ validation
     if (
       !payload.name ||
-      isNaN(payload.capacity) || payload.capacity <= 0 ||
-      !payload.available
+      isNaN(payload.capacity) || payload.capacity <= 0 
     ) {
       alert('Please fill all required fields with valid data.');
       return;
@@ -84,8 +88,6 @@ export class Amenities implements OnInit {
       name: '',
       description: '',
       capacity: null,
-      available: '',
-      icon:'',
       image_url:''
 }
   }

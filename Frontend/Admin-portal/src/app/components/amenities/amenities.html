@@ -7,13 +7,17 @@
     <form class="grid grid-cols-1 md:grid-cols-2 gap-4" (ngSubmit)="saveAmenity()">
 
       <div>
-        <label class="block text-sm font-medium mb-1">Tower ID</label>
-        <input
-          type="number"
+        <label class="block text-sm font-medium mb-1">Tower</label>
+        <select
           [(ngModel)]="amenityForm.tower_id"
           name="tower_id"
           class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400"
-        />
+          required>
+          <option value="" disabled>Select Tower</option>
+          <option *ngFor="let t of towerList" [value]="t.id">
+            {{ t.name }}
+          </option>
+        </select>
       </div>
 
       <div>
@@ -33,28 +37,6 @@
           [(ngModel)]="amenityForm.capacity"
           name="capacity"
           class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400"
-        />
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium mb-1">Available</label>
-        <select
-          [(ngModel)]="amenityForm.available"
-          name="available"
-          class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400">
-          <option>Available</option>
-          <option>Not Available</option>
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium mb-1">Icon</label>
-        <input
-          type="text"
-          [(ngModel)]="amenityForm.icon"
-          name="icon"
-          class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400"
-          placeholder="🏊‍♂️ / 🏋️ / 🚗"
         />
       </div>
 
@@ -108,8 +90,6 @@
           <th class="p-3">Name</th>
           <th class="p-3">Description</th>
           <th class="p-3">Capacity</th>
-          <th class="p-3">Available</th>
-          <th class="p-3">Icon</th>
           <th class="p-3">Image</th>
           <th class="p-3">Actions</th>
         </tr>
@@ -129,19 +109,6 @@
 
             <td class="p-3">{{ amenity.capacity }}</td>
 
-            <td class="p-3">
-              <span
-                class="px-3 py-1 rounded-full text-sm"
-                [ngClass]="amenity.available === 'Available'
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-red-100 text-red-700'">
-                {{ amenity.available }}
-              </span>
-            </td>
-
-            <td class="p-3 text-xl">
-              {{ amenity.icon || '🏢' }}
-            </td>
 
             <td class="p-3">
               <img

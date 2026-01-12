@@ -1,228 +1,217 @@
-<div class="w-full min-h-screen bg-gray-50 p-6">
-  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<div class="w-full min-h-screen bg-gray-50 p-6 space-y-6">
 
-    <!-- ================= UNITS TABLE ================= -->
-    <div class="lg:col-span-8">
-      <div class="bg-white rounded-2xl shadow p-6">
+  <!-- ================= UNIT FORM (TOP) ================= -->
+  <div class="bg-white rounded-2xl shadow p-6 max-w-5xl mx-auto">
 
-        <h2 class="text-2xl font-semibold mb-4">Units List</h2>
+    <h2 class="text-2xl font-semibold mb-4">
+      {{ isEdit ? 'Edit Unit' : 'Add Unit' }}
+    </h2>
 
-        <table class="w-full border-collapse">
-          <thead>
-            <tr class="bg-gray-100 text-left">
-              <th class="p-3 font-medium text-gray-600">Image</th>
-              <th class="p-3 font-medium text-gray-600">Unit ID</th>
-              <th class="p-3 font-medium text-gray-600">Tower ID</th>
-              <th class="p-3 font-medium text-gray-600">Floor</th>
-              <th class="p-3 font-medium text-gray-600">Beds</th>
-              <th class="p-3 font-medium text-gray-600">Baths</th>
-              <th class="p-3 font-medium text-gray-600">Rent</th>
-              <th class="p-3 font-medium text-gray-600">Status</th>
-              <th class="p-3 font-medium text-gray-600">Actions</th>
-            </tr>
-          </thead>
+    <form class="space-y-4" (ngSubmit)="saveUnit()">
 
-          <tbody class="divide-y">
-            @for (unit of unitList; track $index) {
-            <tr class="hover:bg-gray-50">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-              <td class="p-3">
-                <img
-                  [src]="unit.image_url || 'https://via.placeholder.com/120x80'"
-                  class="w-24 h-20 object-cover rounded-lg shadow-sm"
-                />
-              </td>
+        <!-- Unit ID -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Unit ID</label>
+          <input
+            type="text"
+            [(ngModel)]="unitForm.unit_id"
+            name="unit_id"
+            class="w-full p-2 border rounded-lg"
+            required />
+        </div>
 
-              <td class="p-3">{{ unit.unit_id }}</td>
-              <td class="p-3">{{ unit.tower_id }}</td>
-              <td class="p-3">{{ unit.floor }}</td>
-              <td class="p-3">{{ unit.bedrooms }}</td>
-              <td class="p-3">{{ unit.bathrooms }}</td>
-              <td class="p-3">₹{{ unit.rent }}</td>
+        <!-- Tower -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Tower</label>
+          <select
+            [(ngModel)]="unitForm.tower_id"
+            name="tower_id"
+            class="w-full p-2 border rounded-lg"
+            required>
+            <option value="" disabled>Select Tower</option>
+            <option *ngFor="let t of towerList" [value]="t.id">
+              {{ t.name }}
+            </option>
+          </select>
+        </div>
 
-              <td class="p-3">
-                <span
-                  class="px-3 py-1 rounded-full text-sm"
-                  [ngClass]="{
-                    'bg-green-100 text-green-700': unit.status === 'available',
-                    'bg-red-100 text-red-700': unit.status === 'occupied',
-                    'bg-yellow-100 text-yellow-700': unit.status === 'maintenance'
-                  }"
-                >
-                  {{ unit.status }}
-                </span>
-              </td>
+        <!-- Floor -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Floor</label>
+          <input type="number" [(ngModel)]="unitForm.floor" name="floor"
+            class="w-full p-2 border rounded-lg" required />
+        </div>
 
-              <td class="p-3 flex gap-2">
-                <button
-                  (click)="editUnit(unit)"
-                  class="px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-                  Edit
-                </button>
+        <!-- Area -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Area (sqft)</label>
+          <input type="number" [(ngModel)]="unitForm.area_sqft" name="area_sqft"
+            class="w-full p-2 border rounded-lg" required />
+        </div>
 
-                <button
-                  (click)="deleteUnit(unit.id)"
-                  class="px-3 py-1 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600">
-                  Delete
-                </button>
-              </td>
-            </tr>
-            }
-          </tbody>
-        </table>
+        <!-- Bedrooms -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Bedrooms</label>
+          <input type="number" [(ngModel)]="unitForm.bedrooms" name="bedrooms"
+            class="w-full p-2 border rounded-lg" required />
+        </div>
+
+        <!-- Bathrooms -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Bathrooms</label>
+          <input type="number" [(ngModel)]="unitForm.bathrooms" name="bathrooms"
+            class="w-full p-2 border rounded-lg" required />
+        </div>
+
+        <!-- Rent -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Rent</label>
+          <input type="number" [(ngModel)]="unitForm.rent" name="rent"
+            class="w-full p-2 border rounded-lg" required />
+        </div>
+
+        <!-- Status -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Status</label>
+          <select [(ngModel)]="unitForm.status" name="status"
+            class="w-full p-2 border rounded-lg">
+            <option value="available">Available</option>
+            <option value="occupied">Occupied</option>
+            <option value="maintenance">Maintenance</option>
+          </select>
+        </div>
+
+        <!-- Image URL -->
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium mb-1">Image URL</label>
+          <input type="text" [(ngModel)]="unitForm.image_url" name="image_url"
+            class="w-full p-2 border rounded-lg" />
+        </div>
+
+        <!-- Description -->
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium mb-1">Description</label>
+          <textarea [(ngModel)]="unitForm.description" name="description"
+            class="w-full p-2 border rounded-lg" rows="3"></textarea>
+        </div>
+
       </div>
-    </div>
 
-    <!-- ================= UNIT FORM ================= -->
-    <div class="lg:col-span-4">
-      <div class="bg-white rounded-2xl shadow p-6">
-        <h2 class="text-2xl font-semibold mb-4">
-          {{ isEdit ? 'Edit Unit' : 'Add Unit' }}
-        </h2>
+      <!-- Buttons -->
+      <div class="flex gap-3 pt-4">
+        <button type="submit"
+          class="bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700">
+          {{ isEdit ? 'Update Unit' : 'Save Unit' }}
+        </button>
 
-        <form class="space-y-4" (ngSubmit)="saveUnit()">
-
-          <!-- Unit ID -->
-          <div>
-            <label class="block text-sm font-medium mb-1">Unit ID</label>
-            <input
-              type="text"
-              [(ngModel)]="unitForm.unit_id"
-              name="unit_id"
-              class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400"
-              placeholder="101A"
-              required
-            />
-          </div>
-
-          <!-- Tower ID -->
-          <div>
-            <label class="block text-sm font-medium mb-1">Tower ID</label>
-            <input
-              type="number"
-              [(ngModel)]="unitForm.tower_id"
-              name="tower_id"
-              class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400"
-              required
-            />
-          </div>
-
-          <!-- Floor -->
-          <div>
-            <label class="block text-sm font-medium mb-1">Floor</label>
-            <input
-              type="number"
-              [(ngModel)]="unitForm.floor"
-              name="floor"
-              class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400"
-              required
-            />
-          </div>
-
-          <!-- Beds & Baths -->
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium mb-1">Bedrooms</label>
-              <input
-                type="number"
-                [(ngModel)]="unitForm.bedrooms"
-                name="bedrooms"
-                class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400"
-                required
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium mb-1">Bathrooms</label>
-              <input
-                type="number"
-                [(ngModel)]="unitForm.bathrooms"
-                name="bathrooms"
-                class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400"
-                required
-              />
-            </div>
-          </div>
-
-          <!-- Area -->
-          <div>
-            <label class="block text-sm font-medium mb-1">Area (sqft)</label>
-            <input
-              type="number"
-              [(ngModel)]="unitForm.area_sqft"
-              name="area_sqft"
-              class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400"
-              required
-            />
-          </div>
-
-          <!-- Rent -->
-          <div>
-            <label class="block text-sm font-medium mb-1">Rent</label>
-            <input
-              type="number"
-              [(ngModel)]="unitForm.rent"
-              name="rent"
-              class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400"
-              required
-            />
-          </div>
-
-          <!-- Status -->
-          <div>
-            <label class="block text-sm font-medium mb-1">Status</label>
-            <select
-              [(ngModel)]="unitForm.status"
-              name="status"
-              class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400">
-              <option value="available">Available</option>
-              <option value="occupied">Occupied</option>
-              <option value="maintenance">Maintenance</option>
-            </select>
-          </div>
-
-          <!-- Image URL -->
-          <div>
-            <label class="block text-sm font-medium mb-1">Image URL</label>
-            <input
-              type="text"
-              [(ngModel)]="unitForm.image_url"
-              name="image_url"
-              class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400"
-              placeholder="https://..."
-            />
-          </div>
-
-          <!-- Description -->
-          <div>
-            <label class="block text-sm font-medium mb-1">Description</label>
-            <textarea
-              [(ngModel)]="unitForm.description"
-              name="description"
-              class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400"
-              rows="3">
-            </textarea>
-          </div>
-
-          <!-- Buttons -->
-          <div class="flex gap-2">
-            <button
-              type="submit"
-              class="flex-1 bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700">
-              {{ isEdit ? 'Update Unit' : 'Save Unit' }}
-            </button>
-
-            <button
-              type="button"
-              (click)="resetForm()"
-              class="flex-1 bg-gray-300 text-gray-800 py-2 rounded-xl hover:bg-gray-400">
-              Reset
-            </button>
-          </div>
-
-        </form>
+        <button type="button" (click)="resetForm()"
+          class="bg-gray-300 text-gray-800 px-6 py-2 rounded-xl hover:bg-gray-400">
+          Reset
+        </button>
       </div>
-    </div>
 
+    </form>
+  </div>
+
+  <!-- ================= UNITS TABLE (BOTTOM) ================= -->
+  <div class="bg-white rounded-2xl shadow p-6">
+
+    <h2 class="text-2xl font-semibold mb-4">Units List</h2>
+
+    <table class="w-full border-collapse">
+      <thead>
+        <tr class="bg-gray-100 text-left">
+          <th class="p-3">ID</th>
+          <th class="p-3">Image</th>
+          <th class="p-3">Unit</th>
+          <th class="p-3">Tower</th>
+          <th class="p-3">Floor</th>
+          <th class="p-3">Beds</th>
+          <th class="p-3">Baths</th>
+          <th class="p-3">Area (sqft)</th>
+          <th class="p-3">Rent</th>
+          <th class="p-3">Status</th>
+          <th class="p-3">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody class="divide-y">
+        @for (unit of unitList; track $index) {
+        <tr class="hover:bg-gray-50">
+
+          <td class="p-3">{{ unit.id }}</td>
+
+          <td class="p-3">
+            <img
+              [src]="unit.image_url || 'https://via.placeholder.com/120x80'"
+              class="w-24 h-20 object-cover rounded-lg" />
+          </td>
+
+          <td class="p-3">{{ unit.unit_id }}</td>
+          <td class="p-3">{{ unit.tower_id }}</td>
+          <td class="p-3">{{ unit.floor }}</td>
+          <td class="p-3">{{ unit.bedrooms }}</td>
+          <td class="p-3">{{ unit.bathrooms }}</td>
+          <td class="p-3">{{ unit.area_sqft }}</td>
+          <td class="p-3">₹{{ unit.rent }}</td>
+
+          <td class="p-3">
+            <span class="px-3 py-1 rounded-full text-sm"
+              [ngClass]="{
+                'bg-green-100 text-green-700': unit.status === 'available',
+                'bg-red-100 text-red-700': unit.status === 'occupied',
+                'bg-yellow-100 text-yellow-700': unit.status === 'maintenance'
+              }">
+              {{ unit.status }}
+            </span>
+          </td>
+
+          <td class="p-3">
+            <div class="flex flex-wrap gap-2">
+              <button (click)="editUnit(unit)"
+                class="px-3 py-1 bg-blue-500 text-white rounded-lg">
+                Edit
+              </button>
+
+              <button (click)="deleteUnit(unit.id)"
+                class="px-3 py-1 bg-red-500 text-white rounded-lg">
+                Delete
+              </button>
+
+              <button *ngIf="unit.status === 'occupied'"
+                (click)="viewOccupant(unit)"
+                class="px-3 py-1 bg-purple-500 text-white rounded-lg">
+                View Occupant
+              </button>
+            </div>
+          </td>
+
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ================= OCCUPANT MODAL ================= -->
+<div *ngIf="showOccupantModal"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+
+  <div class="bg-white rounded-xl p-6 w-96 shadow-lg">
+    <h3 class="text-xl font-semibold mb-4">Occupant Details</h3>
+
+    <p><b>Name:</b> {{ selectedOccupant?.name }}</p>
+    <p><b>Email:</b> {{ selectedOccupant?.email }}</p>
+    <p><b>Start Date:</b> {{ selectedOccupant?.start_date }}</p>
+    <p><b>End Date:</b> {{ selectedOccupant?.end_date }}</p>
+
+    <button
+      (click)="showOccupantModal = false"
+      class="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg">
+      Close
+    </button>
   </div>
 </div>
