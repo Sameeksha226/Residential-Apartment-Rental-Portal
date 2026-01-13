@@ -2,10 +2,10 @@ services:
 
   postgres:
     image: postgres:15
-    container_name: apartment_db
+    container_name: postgres
     restart: always
     environment:
-      POSTGRES_DB: apt
+      POSTGRES_DB: apartment_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: snayak
     volumes:
@@ -38,7 +38,7 @@ services:
     build: ./frontend/User-portal
     container_name: user_portal
     ports:
-      - "4280:80"
+      - "4208:80"
     depends_on:
       - backend
 

@@ -21,7 +21,7 @@ from routes.admin_reports import admin_reports_bp
 app=Flask(__name__)
 
 app.config["JWT_SECRET_KEY"]=os.getenv("JWT_SECRET_KEY")
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL","postgresql://postgres:snayak@postgres:5432/rental_db")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL","postgresql://postgres:snayak@postgres:5432/apartment_db")
 app.config["JWT_TOKEN_LOCATION"] = ["headers"]
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
 
@@ -111,11 +111,11 @@ def seed_data():
                  description='Luxurious 3BHK apartment with balcony',
                  image_url='https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800'),
             Unit(tower_id=tower1.id, unit_id='A-201', floor=2, bedrooms=2, bathrooms=2, 
-                 area_sqft=1000, rent=6500, status='occupied',
+                 area_sqft=1000, rent=6500, status='available',
                  description='Spacious 2BHK modern amenities ',
                  image_url='https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800'),
             Unit(tower_id=tower2.id, unit_id='B-101', floor=1, bedrooms=2, bathrooms=2, 
-                 area_sqft=1000, rent=4000, status='available',
+                 area_sqft=1000, rent=4000, status='occupied',
                  description='Modern 2BHK with premium fittings and amenities',
                  image_url='https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800'),
             Unit(tower_id=tower2.id, unit_id='B-301', floor=3, bedrooms=3, bathrooms=3, 
@@ -154,10 +154,10 @@ def seed_data():
         bookings = [
             Bookings(user_id=resident1.id,unit_id=units[0].id, 
                    booking_date=date.today(), start_date=date(2026,1,1), end_date=date(2026,6,30),
-                   status='approved', admin_note='Morning swim session'),
+                   status='pending', admin_note='Morning swim session'),
             Bookings(user_id=resident2.id,unit_id=units[3].id,
-                   booking_date=date.today(), start_date=date(2025,12,1), end_date=date(2026,8,30),
-                   status='pending', admin_note='Evening workout',updated_at=date.today()),
+                   booking_date=date.today(), start_date=date(2026,1,1), end_date=date(2026,8,30),
+                   status='approved', admin_note='Evening workout',updated_at=date.today()),
         ]
         db.session.add_all(bookings)
         db.session.commit()
@@ -168,7 +168,7 @@ def seed_data():
             user_id=resident2.id,
             unit_id=units[3].id,
             start_date=date(2026,1,1),
-            end_date=date(2026,6,30),
+            end_date=date(2026,8,30),
             rent_amount=4000,
             deposit=50000,
             status='active'
@@ -178,10 +178,8 @@ def seed_data():
         
         # Create sample payments
         payments = [
-            Payment(lease_id=lease1.id, amount=54000, payment_date=date(2025, 12, 5),
-                   payment_method='Credit Card', status='completed', transaction_id='TXN001'),
-            Payment(lease_id=lease1.id, amount=4000, payment_date=date(2026, 1, 5),
-                   payment_method='Bank Transfer', status='completed', transaction_id='TXN002')
+            Payment(lease_id=lease1.id, amount=54000, payment_date=date(2026, 1,3),
+                   payment_method='Credit Card', status='completed', transaction_id='TXN001')
         ]
         db.session.add_all(payments)
         
@@ -191,4 +189,4 @@ def seed_data():
 
 
 if __name__== "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)

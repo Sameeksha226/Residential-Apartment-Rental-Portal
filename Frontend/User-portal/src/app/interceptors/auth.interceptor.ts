@@ -15,6 +15,14 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   console.log('🔑 TOKEN IN INTERCEPTOR:', token);
 
+  if (
+    req.url.includes('/auth/login') ||
+    req.url.includes('/auth/register')
+  ) {
+    console.log('⏭️ SKIPPING AUTH FOR:', req.url);
+    return next(req);
+  }
+
   // ✅ CHECK EXPIRY BEFORE SENDING REQUEST
   if (token && auth.isTokenExpired()) {
     console.warn('⏰ TOKEN EXPIRED — LOGGING OUT');
