@@ -39,6 +39,7 @@ def get_unit():   #get a unit details
             "floor": u.floor,
             "bedrooms": u.bedrooms,
             "bathrooms": u.bathrooms,
+            'area_sqft': u.area_sqft,
             "rent": u.rent,
             "status": u.status,
             "image_url": u.image_url,

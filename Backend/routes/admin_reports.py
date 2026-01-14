@@ -30,11 +30,15 @@ def booking_report():
 @admin_reports_bp.route('/revenue', methods=['GET'])
 @jwt_required()
 def revenue_report():
+    month_expr = func.to_char(Payment.payment_date, 'YYYY-MM')
+
     data = db.session.query(
-        func.to_char(Payment.payment_date, 'YYYY-MM').label('month'),
+        month_expr.label('month'),
         func.sum(Payment.amount).label('total')
     ).filter(Payment.status == 'completed') \
-     .group_by('month').order_by('month').all()
+     .group_by(month_expr) \
+     .order_by(month_expr) \
+     .all()
 
     return jsonify([
         {"month": month, "total": float(total)}
@@ -48,10 +52,14 @@ def revenue_report():
 @admin_reports_bp.route('/users', methods=['GET'])
 @jwt_required()
 def user_report():
+    month_expr = func.to_char(Users.created_at, 'YYYY-MM')
+
     data = db.session.query(
-        func.to_char(Users.created_at, 'YYYY-MM').label('month'),
+        month_expr.label('month'),
         func.count(Users.id).label('count')
-    ).group_by('month').order_by('month').all()
+    ).group_by(month_expr) \
+     .order_by(month_expr) \
+     .all()
 
     return jsonify([
         {"month": month, "count": count}
@@ -104,10 +112,14 @@ def download_all_reports_csv():
     writer.writerow(['USER REGISTRATION REPORT'])
     writer.writerow(['Month', 'Users Joined'])
 
+    month_expr = func.to_char(Users.created_at, 'YYYY-MM')
+
     user_data = db.session.query(
-        func.to_char(Users.created_at, 'YYYY-MM'),
+        month_expr.label('month'),
         func.count(Users.id)
-    ).group_by('month').order_by('month').all()
+    ).group_by(month_expr) \
+     .order_by(month_expr) \
+     .all()
 
     for month, count in user_data:
         writer.writerow([month, count])
@@ -115,5 +127,7 @@ def download_all_reports_csv():
     return Response(
         output.getvalue(),
         mimetype='text/csv',
-        headers={'Content-Disposition': 'attachment; filename=admin-reports.csv'}
+        headers={
+            'Content-Disposition': 'attachment; filename=admin-reports.csv'
+        }
     )
