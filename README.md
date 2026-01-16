@@ -7,7 +7,7 @@ A full-stack web application to manage residential apartment rentals, bookings, 
 ## Mini Project Brief
 
 ### Objective
-- **Public / Resident App (Angular 20):**
+- **User/ Public / Resident App (Angular 20):**
   Browse flats, view amenities (gym, pool, parking), request bookings, and view booking status.
 - **Admin Portal (Angular 20):**
   Manage towers, units, amenities; approve or decline bookings; manage tenants; and view occupancy and mock payment data.
@@ -95,8 +95,7 @@ Residential Apartment Rental Portal/
 
 
 ---
-
-## Prerequisites (Local Development)
+### Prerequisites
 
 - Python 3.11+
 - Node.js 20+
@@ -106,7 +105,13 @@ Residential Apartment Rental Portal/
 
 ---
 
-## Running Locally (Without Docker)
+
+### 1. Running Project Locally (Without Docker)
+
+Clone the repository
+
+git clone <repository-url>
+cd "Residential Apartment Rental Portal"
 
 ### Backend
 ```bash
@@ -121,7 +126,6 @@ python app.py
 
 ```bash
 cd frontend/User-portal
-npm install
 ng serve
 ```
 
@@ -129,21 +133,48 @@ ng serve
 
 ```bash
 cd frontend/Admin-portal
-npm install
 ng serve
 ```
+-Accessing the application
 
-### Prerequisites
+Admin portal : http://localhost:4200
+User Portal : http://localhost:4208
+Backend API : http://localhost:5000
 
-- Docker Desktop (Windows/Mac) or Docker Engine + Docker Compose (Linux)
-- Git
+Backend api for front end serving starts with http://localhost:5000/api
 
-### Docker Running
+### 2. Docker Running
 
 1. Clone the repository
 
 git clone <repository-url>
 cd "Residential Apartment Rental Portal"
+
+
+Change database url
+
+- In backend/app.py
+
+ change 
+
+ ```bash
+DATABASE_URL="postgresql://postgres:snayak@localhost:5432/apartment_db"
+```
+to
+
+```bash
+DATABASE_URL="postgresql://postgres:snayak@postgres:5432/apartment_db"
+```
+also change as above in backend/.env
+
+- In Frontend/Admin-portal and Frontend/User-portal terminal
+
+```bash
+ng build --configuration=production
+```
+In src/environments/environment.development.ts of both Admin-portal and User-portal
+
+change -> apiUrl:'http://<Backend_Container_Name>:5000/api'
 
 2. Start all services with Docker Compose
 
@@ -157,36 +188,29 @@ docker-compose up --build
 - Build and start the Admin Portal (Angular)
 - Set up networking between all containers
 
-Seed Database
+- Seed Database
 
 ```bash
 docker-compose exec backend flask create-db
 ```
 
-Check if Database ,tables and data exists
+- Check if Database ,tables and data exists
 
 ```bash
 docker-compose exec backend flask create-db
 ```
-
-In Frontend/Admin-portal and Frontend/User-portal terminal
-
-```bash
-ng build --configuration=production
-```
-In src/environments/environment.development.ts of both Admin-portal and User-portal
-
-change -> apiUrl:'http://<Backend_Container_Name>:5000/api'
-
 
 3. Accessing the application
 
 Admin portal : http://localhost:4200
 User Portal : http://localhost:4208
-Backend API : http://localhost:5000/api
+Backend API : http://localhost:5000
+Database : http://localhost:5432
+
+Backend api for front end serving starts with http://localhost:5000/api
 
 
-## Google Cloud Deployment
+## 3. Google Cloud Deployment
 
 This project is deployed on Google Cloud Platform using a Compute Engine Virtual Machine.
 No application code was modified for deployment. Only infrastructure and environment
@@ -216,43 +240,6 @@ sudo usermod -aG docker $USER
 # Clone repository
 git clone <GIT_REPOSITORY_URL>
 cd Residential-Apartment-Rental-Portal
-
-# Build and start containers
-docker compose up -d --build
-
-# Verify running containers
-docker ps
-
-### Environment Configuration
-
-JWT authentication requires secret keys to be set as environment variables.
-
-export JWT_SECRET_KEY="super-secret-key"
-export SECRET_KEY="super-secret-key"
-
-Restart backend container after setting variables:
-
-docker restart flask_backend
-
-### Firewall Rules
-
-Allow public access to required ports.
-
-gcloud compute firewall-rules create allow-app-ports \
-  --allow tcp:4200,tcp:4208,tcp:5000 \
-  --source-ranges 0.0.0.0/0
-
-### Seed Database
-
-```bash
-docker-compose exec backend flask create-db
-```
-
-### Database Access
-
-PostgreSQL runs inside a Docker container.
-
-docker exec -it postgres psql -U postgres
 
 ## Install nano
 
@@ -291,12 +278,49 @@ enter
 ctrl + x
 ```
 
-### Rebuild docker
+# Build and start containers
 
 ```bash
-docker-compose down
-docker-compose up --build -d
-docker ps (optional:to check if containers are running)
+docker compose up -d --build
+```
+
+# Verify running containers
+
+```bash
+docker ps
+```
+
+### Environment Configuration
+
+JWT authentication requires secret keys to be set as environment variables.
+
+export JWT_SECRET_KEY="super-secret-key"
+export SECRET_KEY="super-secret-key"
+
+Restart backend container after setting variables:
+
+docker restart flask_backend
+
+### Firewall Rules
+
+Allow public access to required ports.
+
+gcloud compute firewall-rules create allow-app-ports \
+  --allow tcp:4200,tcp:4208,tcp:5000 \
+  --source-ranges 0.0.0.0/0
+
+### Seed Database
+
+```bash
+docker-compose exec backend flask create-db
+```
+
+### Database Access
+
+PostgreSQL runs inside a Docker container.
+
+```bash
+docker exec -it postgres psql -U postgres
 ```
 
 ### Application Access
