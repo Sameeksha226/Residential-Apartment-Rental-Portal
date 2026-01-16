@@ -112,8 +112,9 @@ Residential Apartment Rental Portal/
 ```bash
 cd backend
 pip install -r requirements.txt
-python app.py
 flask create-db
+python app.py
+```
 
 
 ### Running User Portal Locally
@@ -121,7 +122,7 @@ flask create-db
 ```bash
 cd frontend/User-portal
 npm install
-npm start
+ng serve
 ```
 
 ### Running Admin Portal Locally
@@ -129,7 +130,7 @@ npm start
 ```bash
 cd frontend/Admin-portal
 npm install
-npm start
+ng serve
 ```
 
 ### Prerequisites
@@ -161,6 +162,22 @@ Seed Database
 ```bash
 docker-compose exec backend flask create-db
 ```
+
+Check if Database ,tables and data exists
+
+```bash
+docker-compose exec backend flask create-db
+```
+
+In Frontend/Admin-portal and Frontend/User-portal terminal
+
+```bash
+ng build --configuration=production
+```
+In src/environments/environment.development.ts of both Admin-portal and User-portal
+
+change -> apiUrl:'http://<Backend_Container_Name>:5000/api'
+
 
 3. Accessing the application
 
@@ -225,17 +242,6 @@ gcloud compute firewall-rules create allow-app-ports \
   --allow tcp:4200,tcp:4208,tcp:5000 \
   --source-ranges 0.0.0.0/0
 
-### Application Access
-
-User Portal:
-http://<VM_EXTERNAL_IP>:4208
-
-Admin Portal:
-http://<VM_EXTERNAL_IP>:4200
-
-Backend API:
-http://<VM_EXTERNAL_IP>:5000/api
-
 ### Seed Database
 
 ```bash
@@ -247,6 +253,63 @@ docker-compose exec backend flask create-db
 PostgreSQL runs inside a Docker container.
 
 docker exec -it postgres psql -U postgres
+
+## Install nano
+
+```bash
+sudo apt update
+sudo apt install nano -y
+```
+
+### Change api_url in src/environments/environment.development.ts of both Admin-portal and User-portal
+
+```bash
+cd Admin-portal
+nano src/environments/environment.prod.ts
+change -> apiUrl:'http://<EXTERNAL_API>:4200'
+ctrl + o
+enter
+ctrl + x
+```
+```bash
+cd User-portal
+nano src/environments/environment.prod.ts
+change -> apiUrl:'http://<EXTERNAL_API>:4208'
+ctrl + o
+enter
+ctrl + x
+```
+### Add the above url in backend/app.py
+
+```bash
+cd backend
+nano app.py
+In line "origins": ["http://localhost:4200",'http://localhost:4208']
+Add "origins": "*" or "origins": ["http://localhost:4200",'http://localhost:4208',"http://<EXTERNAL_API>:4200","http://<EXTERNAL_API>:4208"]
+ctrl + o
+enter
+ctrl + x
+```
+
+### Rebuild docker
+
+```bash
+docker-compose down
+docker-compose up --build -d
+docker ps (optional:to check if containers are running)
+```
+
+### Application Access
+
+User Portal:
+http://<VM_EXTERNAL_IP>:4208
+
+Admin Portal:
+http://<VM_EXTERNAL_IP>:4200
+
+Backend API:
+http://<VM_EXTERNAL_IP>:5000/api
+
 
 ### Deployment Summary
 
@@ -452,4 +515,3 @@ The application comes pre-seeded with:
 
 AUTHOR
 Sameeksha Nayak
-
